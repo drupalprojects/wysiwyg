@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-0.x, xxxx-xx-xx
 ---------------------------
+#264739 by sun: Fixed missing t() around some profile settings options.
 
 
 Wysiwyg 5.x-0.1, 2008-06-07
