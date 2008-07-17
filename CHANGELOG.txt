@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-x.x, xxxx-xx-xx
 ---------------------------
+#280727 by sun: Removed gzip compressor from installation instructions.
 
 
 Wysiwyg 5.x-0.2, 2008-07-16
