@@ -8,11 +8,11 @@
  */
 
 /**
- * Controller for Wysiwyg Editor administrative settings.
+ * Callback handler for admin pages; menu callback.
  *
  * @todo Move into hook_menu(), resp. FAPI functions.
  */
-function _wysiwyg_editor_admin($op = NULL) {
+function _wysiwyg_editor_admin($op = '') {
   $edit = $_POST;
   switch ($op) {
     case 'add':
