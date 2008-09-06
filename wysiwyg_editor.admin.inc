@@ -410,6 +410,7 @@ function wysiwyg_editor_profile_form_submit($form_id, &$form_values) {
     $form_values['buttons'][$plugin] = array_filter($form_values['buttons'][$plugin]);
     $plugin_count += count($form_values['buttons'][$plugin]);
   }
+  // Store only enabled buttons.
   $form_values['buttons'] = array_filter($form_values['buttons']);
 
   // Filter enabled roles for this profile.
@@ -477,9 +478,10 @@ function wysiwyg_editor_profile_overview() {
   $usable = TRUE;
   // Check if a Wysiwyg Editor is installed.
   // Hard-coded for TinyMCE for now.
-  $tinymce_loc = drupal_get_path('module', 'wysiwyg_editor') .'/tinymce/';
+  $path_wysiwyg = drupal_get_path('module', 'wysiwyg_editor');
+  $tinymce_loc = $path_wysiwyg .'/tinymce/';
   if (!is_dir($tinymce_loc)) {
-    drupal_set_message(t('Could not find the TinyMCE engine installed at <strong>!tinymce-directory</strong>. Please <a href="http://tinymce.moxiecode.com/">download TinyMCE</a>, uncompress it and copy the folder into !tinymce-path.', array('!tinymce-path' => drupal_get_path('module', 'wysiwyg_editor'), '!tinymce-directory' => $tinymce_loc)), 'error');
+    drupal_set_message(t('Could not find the TinyMCE engine installed at <strong>!tinymce-directory</strong>. Please <a href="!tinymce-url">download TinyMCE</a>, uncompress it and copy the folder into !tinymce-path.', array('!tinymce-directory' => $tinymce_loc, '!tinymce-url' => 'http://tinymce.moxiecode.com/download.php', '!tinymce-path' => $path_wysiwyg)), 'error');
     $usable = FALSE;
   }
   // Check if at least one role is granted access to Wysiwyg Editor.
