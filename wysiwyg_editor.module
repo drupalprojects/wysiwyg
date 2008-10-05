@@ -300,7 +300,7 @@ function wysiwyg_editor_add_plugin_settings($profile) {
 function wysiwyg_editor_get_themes(&$profile, $selected_theme = NULL) {
   static $themes = array();
 
-  if (!isset($themes[$editor['name']])) {
+  if (!isset($themes[$profile->settings['editor']])) {
     $editor = wysiwyg_get_editor($profile->settings['editor']);
     if (isset($editor['themes callback']) && function_exists($editor['themes callback'])) {
       $themes[$editor['name']] = $editor['themes callback']($editor, $profile);
@@ -314,12 +314,12 @@ function wysiwyg_editor_get_themes(&$profile, $selected_theme = NULL) {
   // Check optional $selected_theme argument, if given.
   if (isset($selected_theme)) {
     // If the passed theme name does not exist, use the first available.
-    if (!isset($themes[$editor['name']][$selected_theme])) {
-      $selected_theme = $profile->settings['theme'] = $themes[$editor['name']][0];
+    if (!isset($themes[$profile->settings['editor']][$selected_theme])) {
+      $selected_theme = $profile->settings['theme'] = $themes[$profile->settings['editor']][0];
     }
   }
 
-  return isset($selected_theme) ? $selected_theme : $themes[$editor['name']];
+  return isset($selected_theme) ? $selected_theme : $themes[$profile->settings['editor']];
 }
 
 /**

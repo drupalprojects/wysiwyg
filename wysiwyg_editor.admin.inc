@@ -20,13 +20,11 @@ function _wysiwyg_editor_admin($op = '') {
       $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile', 'title' => t('Wysiwyg Editor'));
       $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile/add', 'title' => t('Add new Wysiwyg Editor profile'));
       menu_set_location($breadcrumb);
-      $output = drupal_get_form('wysiwyg_editor_profile_form', $edit);
-      break;
+      return drupal_get_form('wysiwyg_editor_profile_form', $edit);
 
     case 'edit':
       drupal_set_title(t('Edit Wysiwyg Editor profile'));
-      $output = drupal_get_form('wysiwyg_editor_profile_form', wysiwyg_editor_load_profile(urldecode(arg(5))));
-      break;
+      return drupal_get_form('wysiwyg_editor_profile_form', wysiwyg_editor_load_profile(urldecode(arg(5))));
 
     case 'delete':
       wysiwyg_editor_profile_delete(urldecode(arg(5)));
@@ -36,14 +34,11 @@ function _wysiwyg_editor_admin($op = '') {
 
     case t('Create profile'):
     case t('Update profile'):
-      $output = drupal_get_form('wysiwyg_editor_profile_form', $edit);
-      break;
+      return drupal_get_form('wysiwyg_editor_profile_form', $edit);
 
     default:
-      $output = wysiwyg_editor_profile_overview();
+      return wysiwyg_editor_profile_overview();
   }
-
-  return $output;
 }
 
 /**
@@ -55,41 +50,44 @@ function wysiwyg_editor_profile_form($profile) {
   $profile += array(
     'name' => NULL,
     'rids' => array(),
-    'settings' => array(
-      'editor' => NULL,
-      'default' => TRUE,
-      'user_choose' => FALSE,
-      'show_toggle' => TRUE,
-      'theme' => 'advanced',
-      'language' => 'en',
-      'access' => 1,
-      'access_pages' => "node/*\nuser/*\ncomment/*",
-      'buttons' => array(),
-      'toolbar_loc' => 'top',
-      'toolbar_align' => 'left',
-      'path_loc' => 'bottom',
-      'resizing' => TRUE,
-      // Also available, but buggy in TinyMCE 2.x: blockquote,code,dt,dd,samp.
-      'block_formats' => 'p,address,pre,h2,h3,h4,h5,h6,div',
-      'verify_html' => TRUE,
-      'preformatted' => FALSE,
-      'convert_fonts_to_spans' => TRUE,
-      'remove_linebreaks' => TRUE,
-      'apply_source_formatting' => FALSE,
-      'paste_auto_cleanup_on_paste' => FALSE,
-      'css_setting' => 'theme',
-      'css_path' => NULL,
-      'css_classes' => NULL,
-    ),
+    'settings' => array(),
+  );
+  $profile['settings'] += array(
+    'editor' => NULL,
+    'default' => TRUE,
+    'user_choose' => FALSE,
+    'show_toggle' => TRUE,
+    'theme' => 'advanced',
+    'language' => 'en',
+    'access' => 1,
+    'access_pages' => "node/*\nuser/*\ncomment/*",
+    'buttons' => array(),
+    'toolbar_loc' => 'top',
+    'toolbar_align' => 'left',
+    'path_loc' => 'bottom',
+    'resizing' => TRUE,
+    // Also available, but buggy in TinyMCE 2.x: blockquote,code,dt,dd,samp.
+    'block_formats' => 'p,address,pre,h2,h3,h4,h5,h6,div',
+    'verify_html' => TRUE,
+    'preformatted' => FALSE,
+    'convert_fonts_to_spans' => TRUE,
+    'remove_linebreaks' => TRUE,
+    'apply_source_formatting' => FALSE,
+    'paste_auto_cleanup_on_paste' => FALSE,
+    'css_setting' => 'theme',
+    'css_path' => NULL,
+    'css_classes' => NULL,
   );
   settype($profile, 'object');
 
+  $form = array();
+
   if (arg(4) == 'add') {
-    $btn = t('Create profile');
+    $submit_label = t('Create profile');
   }
   else {
     $form['old_name'] = array('#type' => 'hidden', '#value' => $profile->name);
-    $btn = t('Update profile');
+    $submit_label = t('Update profile');
   }
 
   $form['basic'] = array(
@@ -242,7 +240,7 @@ function wysiwyg_editor_profile_form($profile) {
         $form['buttons'][$name][$button] = array(
           '#type' => 'checkbox',
           '#title' => $title,
-          '#default_value' => isset($profile->settings['buttons'][$name][$button]) ? $profile->settings['buttons'][$name][$button] : NULL,
+          '#default_value' => !empty($profile->settings['buttons'][$name][$button]) ? $profile->settings['buttons'][$name][$button] : FALSE,
         );
       }
     }
@@ -257,7 +255,7 @@ function wysiwyg_editor_profile_form($profile) {
         $form['buttons'][$name][$extension] = array(
           '#type' => 'checkbox',
           '#title' => $title,
-          '#default_value' => isset($profile->settings['buttons'][$name][$extension]) ? $profile->settings['buttons'][$name][$extension] : NULL,
+          '#default_value' => !empty($profile->settings['buttons'][$name][$extension]) ? $profile->settings['buttons'][$name][$extension] : FALSE,
         );
       }
     }
@@ -399,7 +397,7 @@ function wysiwyg_editor_profile_form($profile) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => $btn,
+    '#value' => $submit_label,
   );
 
   return $form;
@@ -408,7 +406,7 @@ function wysiwyg_editor_profile_form($profile) {
 /**
  * Form submit callback for wysiwyg_editor_profile_form_build().
  *
- * @see wysiwyg_editor_profile_form_build()
+ * @see wysiwyg_editor_profile_form()
  */
 function wysiwyg_editor_profile_form_submit($form_id, &$form_values) {
   // Count enabled plugins for this profile.
@@ -467,8 +465,12 @@ function theme_wysiwyg_editor_admin_button_table($form) {
   for ($i = 0; $i < $total; $i++) {
     $row    = array();
     $row[]  = array('data' => $buttons[$i]);
-    $row[]  = array('data' => $buttons[++$i]);
-    $row[]  = array('data' => $buttons[++$i]);
+    if (isset($buttons[++$i])) {
+      $row[]  = array('data' => $buttons[$i]);
+    }
+    if (isset($buttons[++$i])) {
+      $row[]  = array('data' => $buttons[$i]);
+    }
     $rows[] = $row;
   }
 
