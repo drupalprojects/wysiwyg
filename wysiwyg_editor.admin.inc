@@ -12,29 +12,25 @@
  *
  * @todo Move into hook_menu(), resp. FAPI functions.
  */
-function _wysiwyg_editor_admin($op = '') {
-  $edit = $_POST;
-  switch ($op) {
+function _wysiwyg_editor_admin($arg = '', $name = '') {
+  switch ($arg) {
     case 'add':
       $breadcrumb[] = array('path' => 'admin', 'title' => t('administer'));
       $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile', 'title' => t('Wysiwyg Editor'));
       $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile/add', 'title' => t('Add new Wysiwyg Editor profile'));
       menu_set_location($breadcrumb);
-      return drupal_get_form('wysiwyg_editor_profile_form', $edit);
+      $profile = new stdClass;
+      return drupal_get_form('wysiwyg_editor_profile_form', $profile);
 
     case 'edit':
       drupal_set_title(t('Edit Wysiwyg Editor profile'));
-      return drupal_get_form('wysiwyg_editor_profile_form', wysiwyg_editor_load_profile(urldecode(arg(5))));
+      return drupal_get_form('wysiwyg_editor_profile_form', wysiwyg_editor_load_profile($name));
 
     case 'delete':
-      wysiwyg_editor_profile_delete(urldecode(arg(5)));
-      drupal_set_message(t('Deleted profile'));
+      wysiwyg_editor_profile_delete($name);
+      drupal_set_message(t('Wysiwyg profile %name has been deleted.', array('%name' => $name)));
       drupal_goto('admin/settings/wysiwyg/profile');
       break;
-
-    case t('Create profile'):
-    case t('Update profile'):
-      return drupal_get_form('wysiwyg_editor_profile_form', $edit);
 
     default:
       return wysiwyg_editor_profile_overview();
@@ -449,7 +445,7 @@ function wysiwyg_editor_profile_form_submit($form_id, &$form_values) {
 /**
  * Layout for the buttons in the Wysiwyg Editor profile form.
  */
-function theme_wysiwyg_editor_admin_button_table($form) {
+function theme_wysiwyg_editor_admin_button_table(&$form) {
   $buttons = array();
 
   // Flatten forms array.

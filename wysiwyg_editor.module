@@ -56,11 +56,9 @@ function wysiwyg_editor_perm() {
 /**
  * Callback handler for admin pages; menu callback.
  */
-function wysiwyg_editor_admin($arg = '') {
+function wysiwyg_editor_admin($arg = '', $name = '') {
   require_once drupal_get_path('module', 'wysiwyg_editor') .'/wysiwyg_editor.admin.inc';
-  $op = isset($_POST['op']) ? $_POST['op'] : '';
-  $op = ($arg && !$op ? $arg : $op);
-  return _wysiwyg_editor_admin($op);
+  return _wysiwyg_editor_admin($arg, $name);
 }
 
 /**
