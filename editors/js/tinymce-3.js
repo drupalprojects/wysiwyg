@@ -29,14 +29,14 @@ Drupal.wysiwyg.init.tinymce = function(editorSettings) {
   for (var plugin in Drupal.settings.wysiwygEditor.plugins.tinymce) {
     tinymce.PluginManager.load(plugin, Drupal.settings.wysiwygEditor.plugins.tinymce[plugin] + '/editor_plugin.js');
   }
-}
+};
 
 /**
  * Attach this editor to a target element.
  *
- * See Drupal.wysiwyg.attach.none() for a full desciption of this hook.
+ * See Drupal.wysiwyg.editor.attach.none() for a full desciption of this hook.
  */
-Drupal.wysiwyg.attach.tinymce = function(context, params, editorSettings) {
+Drupal.wysiwyg.editor.attach.tinymce = function(context, params, editorSettings) {
   // Configure settings for this theme.
   for (var setting in editorSettings[params.theme]) {
     tinyMCE.settings[setting] = editorSettings[params.theme][setting];
@@ -45,14 +45,14 @@ Drupal.wysiwyg.attach.tinymce = function(context, params, editorSettings) {
   if (Drupal.settings.wysiwygEditor.status) {
     tinyMCE.execCommand('mceAddControl', true, params.field);
   }
-}
+};
 
 /**
  * Detach a single or all editors.
  *
- * See Drupal.wysiwyg.detach.none() for a full desciption of this hook.
+ * See Drupal.wysiwyg.editor.detach.none() for a full desciption of this hook.
  */
-Drupal.wysiwyg.detach.tinymce = function(context, params) {
+Drupal.wysiwyg.editor.detach.tinymce = function(context, params) {
   if (typeof params != 'undefined') {
     var editor = tinyMCE.get(params.field);
     if (editor) {
@@ -64,5 +64,5 @@ Drupal.wysiwyg.detach.tinymce = function(context, params) {
     tinyMCE.triggerSave();
     tinyMCE.activeEditor.remove();
   }
-}
+};
 
