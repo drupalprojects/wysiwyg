@@ -1,7 +1,5 @@
 // $Id$
 
-Drupal.wysiwyg = Drupal.wysiwyg || { 'init': {}, 'attach': {}, 'detach': {} };
-
 /**
  * Initialize editor instances.
  *
@@ -12,7 +10,7 @@ Drupal.wysiwyg = Drupal.wysiwyg || { 'init': {}, 'attach': {}, 'detach': {} };
  * @param editorSettings
  *   An object containing editor settings for each enabled editor theme.
  */
-Drupal.wysiwyg.init.tinymce = function(editorSettings) {
+Drupal.wysiwyg.editor.init.tinymce = function(editorSettings) {
   // If JS compression is enabled, TinyMCE is unable to find its own base path
   // and exec mode, hence we need to define it manually.
   // @todo Move global library settings somewhere else.
