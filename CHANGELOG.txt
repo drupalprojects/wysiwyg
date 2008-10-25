@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-x.x, xxxx-xx-xx
 ---------------------------
+#325980 by markus_petrux: Added Spanish/Catalan translation for Break plugin.
 #325657 by sun: Fixed editor not showing up on Blog node form.
 #283823 by sun: Added dependency on jQuery Update (2.x).
 #323795 by sun: Removed obsolete Wysiwyg Editor module files.
