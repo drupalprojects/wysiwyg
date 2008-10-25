@@ -92,6 +92,12 @@ function wysiwyg_form_alter($form_id, &$form) {
   if (!in_array('wysiwyg_process_form', $form['#after_build'])) {
     array_unshift($form['#after_build'], 'wysiwyg_process_form');
   }
+  // Blog module in Drupal 5 uses a wrong/unusual form element key for the input
+  // format selector.
+  if ($form_id == 'blog_node_form') {
+    $form['body_filter']['format'] = $form['body_filter']['filter'];
+    unset($form['body_filter']['filter']);
+  }
 }
 
 /**
