@@ -13,23 +13,25 @@
  */
 function _wysiwyg_admin($arg = '', $format = '') {
   switch ($arg) {
-    case 'add':
-      $breadcrumb[] = array('path' => 'admin', 'title' => t('administer'));
-      $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile', 'title' => t('Wysiwyg Editor'));
-      $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile/add', 'title' => t('Add new Wysiwyg Editor profile'));
-      menu_set_location($breadcrumb);
-      $profile = new stdClass;
-      return drupal_get_form('wysiwyg_profile_form', $profile);
-
     case 'edit':
-      return drupal_get_form('wysiwyg_profile_form', wysiwyg_load_profile($format));
+      if ($profile = wysiwyg_load_profile($format)) {
+        $breadcrumb = array();
+        $breadcrumb[] = array('path' => 'admin', 'title' => t('administer'));
+        $breadcrumb[] = array('path' => 'admin/settings', 'title' => t('Site configuration'));
+        $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile', 'title' => t('Wysiwyg profiles'));
+        $breadcrumb[] = array('path' => 'admin/settings/wysiwyg/profile/edit');
+        menu_set_location($breadcrumb);
+        return drupal_get_form('wysiwyg_profile_form', $profile);
+      }
+      break;
 
     case 'delete':
       return drupal_get_form('wysiwyg_profile_delete_confirm', $format);
 
-    default:
+    case '':
       return drupal_get_form('wysiwyg_profile_overview');
   }
+  drupal_goto('admin/settings/wysiwyg/profile');
 }
 
 /**
