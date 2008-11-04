@@ -17,7 +17,7 @@ function wysiwyg_menu($may_cache) {
       'title' => t('Wysiwyg'),
       'callback' => 'wysiwyg_admin',
       'description' => t('Configure client-side editor profiles.'),
-      'access' => user_access('administer site configuration'),
+      'access' => user_access('administer filters'),
     );
   }
   return $items;
