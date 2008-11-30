@@ -48,14 +48,6 @@ function wysiwyg_admin($arg = '', $name = '') {
 /**
  * Implementation of hook_elements().
  *
- * Before Drupal 7, there is no way to easily identify form fields that are
- * input format enabled. This is a workaround: We assign a form #after_build
- * processing callback that is executed on all forms after they have been
- * completely built, so that form elements already are in their effective order
- * and position.
- *
- * @see wysiwyg_process_form()
- *
  * @todo Remove #wysiwyg_style; the GUI for an editor should be solely handled
  *   via profiles, when profiles are attached to an input format. It makes no
  *   sense to display TinyMCE's simple GUI/theme for the user signature, when
@@ -71,17 +63,18 @@ function wysiwyg_elements() {
 }
 
 /**
- * Drupal 5 does not properly support #after_build in hook_elements().
+ * Implementation of hook_form_alter().
  *
- * @see wysiwyg_elements()
+ * Before Drupal 7, there is no way to easily identify form fields that are
+ * input format enabled. As a workaround, we assign a form #after_build
+ * processing callback that is executed on all forms after they have been
+ * completely built, so form elements are in their effective order
+ * and position already.
+ *
+ * @see wysiwyg_process_form()
  */
 function wysiwyg_form_alter($form_id, &$form) {
-  if (!isset($form['#after_build'])) {
-    $form['#after_build'] = array();
-  }
-  if (!in_array('wysiwyg_process_form', $form['#after_build'])) {
-    array_unshift($form['#after_build'], 'wysiwyg_process_form');
-  }
+  $form['#after_build'][] = 'wysiwyg_process_form';
   // Blog module in Drupal 5 uses a wrong/unusual form element key for the input
   // format selector.
   if ($form_id == 'blog_node_form') {
