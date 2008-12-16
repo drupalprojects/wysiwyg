@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-x.x, xxxx-xx-xx
 ---------------------------
+#283823 by sun: Fixed list of dependencies in README.txt.
 #342864 by davexoxide, sun: Added YUI editor support.
 #343217 by sun: Fixed improperly capitalized library script name for nicEdit.
 #341267 by sun: Fixed improper test for internal editor plugins.

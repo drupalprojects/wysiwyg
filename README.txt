@@ -14,7 +14,7 @@ Bug reports, feature suggestions and latest developments:
 
 -- REQUIREMENTS --
 
-* None.
+* jQuery Update 2.x.
 
 
 -- INSTALLATION --
