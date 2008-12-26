@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-x.x, xxxx-xx-xx
 ---------------------------
+#348317 by sun: Fixed TinyMCE's extended_valid_elements for advlink plugin.
 #348986 by sun: Added CSS class for toggle link container.
 #283823 by sun: Fixed list of dependencies in README.txt.
 #342864 by davexoxide, sun: Added YUI editor support.
