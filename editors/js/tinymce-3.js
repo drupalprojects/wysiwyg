@@ -34,11 +34,9 @@ Drupal.wysiwyg.editor.init.tinymce = function(settings) {
  */
 Drupal.wysiwyg.editor.attach.tinymce = function(context, params, settings) {
   // Configure editor settings for this input format.
-  for (var setting in settings) {
-    tinyMCE.settings[setting] = settings[setting];
-  }
+  var ed = new tinymce.Editor(params.field, settings);
   // Attach editor.
-  tinyMCE.execCommand('mceAddControl', true, params.field);
+  ed.render();
 };
 
 /**

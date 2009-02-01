@@ -76,8 +76,8 @@ Drupal.wysiwygAttach = function(context, params) {
   if (typeof Drupal.wysiwyg.editor.attach[params.editor] == 'function') {
     // (Re-)initialize field instance.
     Drupal.wysiwyg.instances[params.field] = {};
-    // Store new editor name and status for this field.
-    Drupal.wysiwyg.instances[params.field].editor = params.editor;
+    // Provide all input format parameters to editor instance.
+    jQuery.extend(Drupal.wysiwyg.instances[params.field], params);
     // Attach or update toggle link.
     Drupal.wysiwygAttachToggleLink(context, params);
     // Attach editor, if enabled by default or last state was enabled.
@@ -130,6 +130,7 @@ Drupal.wysiwygAttachToggleLink = function(context, params) {
       params.status = false;
       Drupal.wysiwygDetach(context, params);
       // After disabling the editor, re-attach default behaviors.
+      // @todo We HAVE TO invoke Drupal.wysiwygAttach() here.
       Drupal.wysiwyg.editor.attach.none(context, params);
       Drupal.wysiwyg.instances[params.field].editor = 'none';
       $(this).html(Drupal.settings.wysiwyg.enable).blur();
