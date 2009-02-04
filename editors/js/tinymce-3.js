@@ -46,18 +46,18 @@ Drupal.wysiwyg.editor.attach.tinymce = function(context, params, settings) {
  */
 Drupal.wysiwyg.editor.detach.tinymce = function(context, params) {
   if (typeof params != 'undefined') {
-    var editor = tinyMCE.get(params.field);
-    if (editor) {
-      editor.save();
-      editor.remove();
+    var instance = tinyMCE.get(params.field);
+    if (instance) {
+      instance.save();
+      instance.remove();
     }
   }
   else {
     // Save contents of all editors back into textareas.
     tinyMCE.triggerSave();
     // Remove all editor instances.
-    for (var instanceId in tinyMCE.editors) {
-      tinyMCE.editors[instanceId].remove();
+    for (var instance in tinyMCE.editors) {
+      tinyMCE.editors[instance].remove();
     }
   }
 };
