@@ -59,39 +59,13 @@ function template_preprocess_wysiwyg_dialog_page(&$variables) {
 }
 
 /**
- * @file
- * Theme template to display a single Wysiwyg (plugin) dialog page.
- *
- * Available variables:
- *
- * Page metadata:
- * - $language: The language the site is being displayed in.
- * - $head_title: A modified version of the page title, for use in the TITLE tag.
- * - $head: Markup for the HEAD section (including meta tags, keyword tags, and
- *   so on).
- * - $styles: Style tags necessary to import all CSS files for the page.
- * - $scripts: Script tags necessary to load the JavaScript files and settings
- *   for the page.
- *
- * Page content (in order of occurrance in the default page.tpl.php):
- * - $breadcrumb: The breadcrumb trail for the current page.
- * - $title: The page title, for use in the actual HTML content.
- * - $help: Dynamic help text, mostly for admin pages.
- * - $messages: HTML for status and error messages. Should be displayed prominently.
- * - $tabs: Tabs linking to any sub-pages beneath the current page (e.g., the view
- *   and edit tabs when displaying a node).
- *
- * - $content: The main content of the current Drupal page.
- *
- * Footer/closing data:
- * - $footer : The footer region.
- * - $closure: Final closing markup from any modules that have altered the page.
- *   This variable should always be output last, after all other dynamic content.
+ * Render a single Wysiwyg (plugin) dialog page. (D5 only)
  *
  * @see template_preprocess_wysiwyg_dialog_page()
+ * @see wysiwyg-dialog-page.tpl.php
  */
-function theme_wysiwyg_dialog_page() {
-  $variables = array();
+function theme_wysiwyg_dialog_page($content) {
+  $variables = array('content' => $content);
   template_preprocess_wysiwyg_dialog_page($variables);
   return theme('render_template', drupal_get_path('module', 'wysiwyg') . '/wysiwyg-dialog-page.tpl.php', $variables);
 }

@@ -7,29 +7,14 @@
  *
  * Available variables:
  *
- * General utility variables:
- * - $base_path: The base URL path of the Drupal installation. At the very
- *   least, this will always default to /.
- * - $css: An array of CSS files for the current page.
- * - $directory: The directory the theme is located in, e.g. themes/garland or
- *   themes/garland/minelli.
- * - $logged_in: TRUE if the user is registered and signed in.
- * - $is_admin: TRUE if the user has permission to access administration pages.
- *
  * Page metadata:
- * - $language: (object) The language the site is being displayed in.
- *   $language->language contains its textual representation.
- *   $language->dir contains the language direction. It will either be 'ltr' or 'rtl'.
+ * - $language: The language the site is being displayed in.
  * - $head_title: A modified version of the page title, for use in the TITLE tag.
  * - $head: Markup for the HEAD section (including meta tags, keyword tags, and
  *   so on).
  * - $styles: Style tags necessary to import all CSS files for the page.
  * - $scripts: Script tags necessary to load the JavaScript files and settings
  *   for the page.
- *
- * Site identity:
- * - $site_name: The name of the site, empty when display has been disabled
- *   in theme settings.
  *
  * Page content (in order of occurrance in the default page.tpl.php):
  * - $breadcrumb: The breadcrumb trail for the current page.
@@ -46,7 +31,6 @@
  * - $closure: Final closing markup from any modules that have altered the page.
  *   This variable should always be output last, after all other dynamic content.
  *
- * @see template_preprocess()
  * @see template_preprocess_wysiwyg_dialog_page()
  */
 ?>
