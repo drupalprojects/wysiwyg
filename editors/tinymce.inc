@@ -293,13 +293,15 @@ function wysiwyg_tinymce_themes($editor, $profile) {
  * Build a JS settings array of external plugins that need to be loaded separately.
  *
  * TinyMCE requires that external plugins (i.e. not residing in the editor's
- * directory) are loaded (once) after the editor has been initialized.
+ * directory) are loaded (once) upon initializing the editor.
  */
 function wysiwyg_tinymce_plugin_settings($editor, $profile, $plugins) {
   $settings = array();
   foreach ($plugins as $name => $plugin) {
     if (empty($plugin['internal'])) {
-      $settings[$name] = base_path() . $plugin['path'];
+      if (isset($plugin['path'])) {
+        $settings[$name] = base_path() . $plugin['path'];
+      }
     }
   }
   return $settings;
