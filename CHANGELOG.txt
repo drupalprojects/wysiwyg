@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-1.x, xxxx-xx-xx
 ---------------------------
+#376400 by TwoD: Fixed bad grammar in help text on profile overview page.
 #367632 by sun: Fixed $this and i JavaScript variables defined in global scope.
 
 
