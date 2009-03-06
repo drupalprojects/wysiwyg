@@ -20,9 +20,12 @@ Drupal.wysiwyg.editor.init.tinymce = function(settings) {
   // Initialize editor configurations.
   for (var format in settings) {
     tinyMCE.init(settings[format]);
-  }
-  for (var plugin in Drupal.settings.wysiwyg.plugins.tinymce) {
-    tinyMCE.loadPlugin(plugin, Drupal.settings.wysiwyg.plugins.tinymce[plugin]);
+    if (Drupal.settings.wysiwyg.plugins[format]) {
+      // Load native external plugins.
+      for (var plugin in Drupal.settings.wysiwyg.plugins[format]) {
+        tinyMCE.loadPlugin(plugin, Drupal.settings.wysiwyg.plugins[format][plugin]);
+      }
+    }
   }
 };
 
