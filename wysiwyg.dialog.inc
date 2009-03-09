@@ -67,5 +67,5 @@ function template_preprocess_wysiwyg_dialog_page(&$variables) {
 function theme_wysiwyg_dialog_page($content) {
   $variables = array('content' => $content);
   template_preprocess_wysiwyg_dialog_page($variables);
-  return theme('render_template', drupal_get_path('module', 'wysiwyg') . '/wysiwyg-dialog-page.tpl.php', $variables);
+  return _phptemplate_render(drupal_get_path('module', 'wysiwyg') . '/wysiwyg-dialog-page.tpl.php', $variables);
 }
