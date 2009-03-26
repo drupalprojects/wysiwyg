@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#380698 by TwoD: Added Drupal plugin support for FCKeditor.
 #380698 by TwoD, sun: Added Drupal plugin support for FCKeditor (part I).
 #398848 by sun: Added support for TinyMCE 3.1.
 #319363 by Grugnog2: Fixed theme_render_template() does not exist in 5.x.
