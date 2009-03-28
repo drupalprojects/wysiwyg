@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-1.x, xxxx-xx-xx
 ---------------------------
+#416742 by sun: Fixed type casting of $profile in profile configuration form.
 #398848 by sun: Added support for TinyMCE 3.1.
 
 
