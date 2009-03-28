@@ -39,7 +39,7 @@ function _wysiwyg_admin($arg = '', $format = '') {
  */
 function wysiwyg_profile_form($profile) {
   // Merge in defaults.
-  settype($profile, 'array');
+  $profile = (array) $profile;
   $profile += array(
     'format' => 0,
     'editor' => '',
@@ -72,7 +72,7 @@ function wysiwyg_profile_form($profile) {
     'css_path' => NULL,
     'css_classes' => NULL,
   );
-  settype($profile, 'object');
+  $profile = (object) $profile;
 
   $formats = filter_formats();
   drupal_set_title(t('%format Wysiwyg profile', array('%format' => $formats[$profile->format]->name)));
