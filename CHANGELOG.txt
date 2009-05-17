@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-1.x, xxxx-xx-xx
 ---------------------------
+#449134 by sun: Fixed stylesheets of theme missing in node form previews.
 
 
 Wysiwyg 5.x-1.2, 2009-05-17
