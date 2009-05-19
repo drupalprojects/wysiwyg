@@ -46,7 +46,7 @@ function wysiwyg_fckeditor_editor() {
  *   The installed editor version.
  */
 function wysiwyg_fckeditor_version($editor) {
-  $library = $editor['library path'] .'/fckeditor.js';
+  $library = $editor['library path'] . '/fckeditor.js';
   $library = fopen($library, 'r');
   $max_lines = 100;
   while ($max_lines && $line = fgets($library, 60)) {
@@ -85,6 +85,13 @@ function wysiwyg_fckeditor_settings($editor, $config, $theme) {
     'ImageUpload' => FALSE,
     'FlashBrowser' => FALSE,
     'FlashUpload' => FALSE,
+    // By default, FCKeditor converts most characters into HTML entities. Since
+    // it does not support a custom definition, but Drupal supports Unicode, we
+    // disable at least the additional character sets. FCKeditor always converts
+    // XML default characters '&', '<', '>'.
+    // @todo Check whether completely disabling ProcessHTMLEntities is an option.
+    'IncludeLatinEntities' => FALSE,
+    'IncludeGreekEntities' => FALSE,
   );
   if (isset($config['block_formats'])) {
     $settings['FontFormats'] = strtr($config['block_formats'], array(',' => ';'));
