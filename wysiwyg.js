@@ -208,6 +208,15 @@ Drupal.wysiwyg.getParams = function(element, params) {
 };
 
 /**
+ * D5 only: Queue our attach behavior.
+ */
+$(document).ready(function () {
+  if (Drupal.attachBehaviors === undefined) {
+    Drupal.behaviors.attachWysiwyg(this);
+  }
+});
+
+/**
  * Allow certain editor libraries to initialize before the DOM is loaded.
  */
 Drupal.wysiwygInit();

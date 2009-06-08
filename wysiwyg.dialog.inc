@@ -9,7 +9,7 @@
 /**
  * Menu callback; Output a wysiwyg plugin dialog page.
  */
-function _wysiwyg_dialog($plugin, $instance) {
+function wysiwyg_dialog($plugin, $instance) {
   $plugins = wysiwyg_get_all_plugins();
   if (!isset($plugins[$plugin])) {
     return drupal_access_denied();
