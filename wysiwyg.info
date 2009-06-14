@@ -2,4 +2,4 @@
 name = Wysiwyg
 description = Allows users to edit contents with client-side editors.
 package = User interface
-dependencies = jquery_update
+dependencies = libraries ctools jquery_update jquery_ui debug
