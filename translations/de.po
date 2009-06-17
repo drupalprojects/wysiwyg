@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: German translation of WYSIWYG editor\n"
 "POT-Creation-Date: 2009-06-17 21:00+0200\n"
-"PO-Revision-Date: 2009-06-17 22:29+0100\n"
+"PO-Revision-Date: 2009-06-17 22:49+0100\n"
 "Last-Translator: Alexander Haß\n"
 "Language-Team: Alexander Hass\n"
 "MIME-Version: 1.0\n"
@@ -88,12 +88,13 @@ msgstr "Oben"
 
 #: wysiwyg.admin.inc:159
 msgid "This option controls whether the editor toolbar is displayed above or below the editing area."
-msgstr "Diese Option kontrolliert, ob die Editor-Werkzeugleiste über oder unter dem Bearbeitungsfeld angezeigt wird oder nicht."
+msgstr "Diese Option kontrolliert, ob die Editor-Werkzeugleiste über oder unter dem Bearbeitungsfeld angezeigt wird."
 
 #: wysiwyg.admin.inc:164
 msgid "Button alignment"
 msgstr "Ausrichtung der Schaltknöpfe"
 
+# context senstive issues
 #: wysiwyg.admin.inc:166
 #, fuzzy
 msgid "Center"
@@ -130,7 +131,7 @@ msgstr "Schaltfläche zur Größenanpassung aktivieren"
 # "Path location toolbar" not literally
 #: wysiwyg.admin.inc:183
 msgid "This option gives you the ability to enable/disable the resizing button. If enabled, the Path location toolbar must be set to \"Top\" or \"Bottom\" in order to display the resize icon."
-msgstr "Diese Option ermöglicht die Schaltfläche zur Größenanpassung zu aktivieren/deaktivieren. Ist diese aktiviert, muss die Pfad-Leiste auf „Oben“ oder „Unten“ eingestellt werden, damit das Symbol zur Größenanpassung angezeigt wird."
+msgstr "Diese Option ermöglicht die Schaltfläche zur Größenanpassung zu aktivieren/deaktivieren. Sobald aktiviert, muss die Pfad-Leiste auf „Oben“ oder „Unten“ eingestellt werden, damit das Symbol zur Größenanpassung angezeigt wird."
 
 #: wysiwyg.admin.inc:188
 msgid "Cleanup and output"
@@ -158,7 +159,7 @@ msgstr "&lt;font&gt;-Tags zu Styles konvertieren"
 
 #: wysiwyg.admin.inc:214
 msgid "If enabled, HTML tags declaring the font size, font family, font color and font background color will be replaced by inline CSS styles."
-msgstr "Sobald aktiviert, werden HTML-Tags mit Schriftgröße, Schriftfamilie, Schriftfarbe und Schrifthintergrundfarbe mit Inline-Styles ersetzt."
+msgstr "Sobald aktiviert, werden HTML-Tags mit Schriftgröße, Schriftfamilie, Schriftfarbe und Schrifthintergrundfarbe durch Inline-Styles ersetzt."
 
 #: wysiwyg.admin.inc:219
 msgid "Remove linebreaks"
@@ -166,7 +167,7 @@ msgstr "Zeilenumbrüche entfernen"
 
 #: wysiwyg.admin.inc:222
 msgid "If enabled, the editor will remove most linebreaks from contents. Disabling this option could avoid conflicts with other input filters."
-msgstr "Sobald aktiviert, wird der Editor die meisten Zeilenumbrüche aus dem Inhalt entfernen. Das Deaktivieren dieser Option kann Konflikte mit anderen Eingabefiltern verhindern."
+msgstr "Sobald aktiviert, wird der Editor die meisten Zeilenumbrüche aus dem Inhalt entfernen. Die Deaktivierung dieser Option kann Konflikte mit anderen Eingabefiltern verhindern."
 
 #: wysiwyg.admin.inc:227
 msgid "Apply source formatting"
@@ -174,7 +175,7 @@ msgstr "Quellcodeformatierung anwenden"
 
 #: wysiwyg.admin.inc:230
 msgid "If enabled, the editor will re-format the HTML source code. Disabling this option could avoid conflicts with other input filters."
-msgstr "Sobald aktiviert, wird der Editor den HTML-Quelltext neu formatieren. Das Deaktivieren dieser Option kann Konflikte mit anderen Eingabefiltern verhindern."
+msgstr "Sobald aktiviert, wird der Editor den HTML-Quelltext neu formatieren. Die Deaktivierung dieser Option kann Konflikte mit anderen Eingabefiltern verhindern."
 
 #: wysiwyg.admin.inc:235
 msgid "Force cleanup on standard paste"
@@ -499,7 +500,7 @@ msgstr "Rückgängig"
 msgid "Redo"
 msgstr "Wiederholen"
 
-# not literally and not context senstive issue
+# not literally and not context senstive issue, should be "Link einfügen/bearbeiten"
 #: editors/fckeditor.inc:223
 #: editors/markitup.inc:132;173
 #: editors/nicedit.inc:114
@@ -509,7 +510,7 @@ msgstr "Wiederholen"
 #: editors/yui.inc:282
 #, fuzzy
 msgid "Link"
-msgstr "Link einfügen/bearbeiten"
+msgstr "Link"
 
 #: editors/fckeditor.inc:223
 #: editors/nicedit.inc:114
