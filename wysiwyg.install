@@ -167,3 +167,23 @@ function wysiwyg_update_5001() {
   return $ret;
 }
 
+/**
+ * Clear JS/CSS caches to ensure that clients load fresh copies.
+ */
+function wysiwyg_update_5200() {
+  $ret = array();
+  drupal_clear_css_cache();
+
+  // Rebuild the menu to remove old admin/settings/wysiwyg/profile item.
+  menu_rebuild();
+
+  // Flush content caches.
+  cache_clear_all();
+
+  $ret[] = array(
+    'success' => TRUE,
+    'query' => 'Caches have been flushed.',
+  );
+  return $ret;
+}
+
