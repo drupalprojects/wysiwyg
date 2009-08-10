@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#545210 by sun: Fixed default value for editor toggle link.
 #372826 by Roi Danton, sun: Added Wysiwyg API developer documentation.
 by sun: Fixed PHP notice.
 #514912 by Likeless, sun: Added plugin/button handling for WYMeditor.
