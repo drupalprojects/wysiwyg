@@ -11,7 +11,7 @@
  */
 function wysiwyg_menu() {
   $items['admin/settings/wysiwyg'] = array(
-    'title' => 'Wysiwyg',
+    'title' => 'Wysiwyg profiles',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('wysiwyg_profile_overview'),
     'description' => 'Configure client-side editors.',
@@ -19,7 +19,7 @@ function wysiwyg_menu() {
     'file' => 'wysiwyg.admin.inc',
   );
   $items['admin/settings/wysiwyg/profile'] = array(
-    'title' => 'Profiles',
+    'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['admin/settings/wysiwyg/profile/%wysiwyg_profile/edit'] = array(
@@ -61,8 +61,12 @@ function wysiwyg_menu() {
  */
 function wysiwyg_theme() {
   return array(
-    'wysiwyg_profile_overview' => array('arguments' => array('form' => NULL)),
-    'wysiwyg_admin_button_table' => array('arguments' => array('form' => NULL)),
+    'wysiwyg_profile_overview' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'wysiwyg_admin_button_table' => array(
+      'arguments' => array('form' => NULL),
+    ),
     'wysiwyg_dialog_page' => array(
       'arguments' => array('content' => NULL, 'show_messages' => TRUE),
       'file' => 'wysiwyg.dialog.inc',
@@ -284,7 +288,6 @@ function wysiwyg_load_editor($profile) {
       }
 
       drupal_add_js(array('wysiwyg' => array(
-        'configs' => array($editor['name'] => array()),
         // @todo Move into (global) editor settings.
         // If JS compression is enabled, at least TinyMCE is unable to determine
         // its own base path and exec mode since it can't find the script name.
@@ -303,6 +306,7 @@ function wysiwyg_load_editor($profile) {
   if (!isset($settings_added) && $loaded[$name]) {
     drupal_add_js(array('wysiwyg' => array(
       'configs' => array(),
+      'plugins' => array(),
       'disable' => t('Disable rich-text'),
       'enable' => t('Enable rich-text'),
     )), 'setting');
@@ -340,7 +344,9 @@ function wysiwyg_add_editor_settings($profile, $theme) {
     $config = wysiwyg_get_editor_config($profile, $theme);
     // drupal_to_js() does not properly convert numeric array keys, so we need
     // to use a string instead of the format id.
-    drupal_add_js(array('wysiwyg' => array('configs' => array($profile->editor => array('format' . $profile->format => $config)))), 'setting');
+    if ($config) {
+      drupal_add_js(array('wysiwyg' => array('configs' => array($profile->editor => array('format' . $profile->format => $config)))), 'setting');
+    }
     $formats[$profile->format] = TRUE;
   }
 }
@@ -415,7 +421,9 @@ function wysiwyg_add_plugin_settings($profile) {
     // settings for native external plugins with required values.
     $settings_native = call_user_func($editor['plugin settings callback'], $editor, $profile, $profile_plugins_native);
 
-    drupal_add_js(array('wysiwyg' => array('plugins' => array('format' . $profile->format => array('native' => $settings_native)))), 'setting');
+    if ($settings_native) {
+      drupal_add_js(array('wysiwyg' => array('plugins' => array('format' . $profile->format => array('native' => $settings_native)))), 'setting');
+    }
   }
 
   // Process Drupal plugins.
@@ -444,7 +452,9 @@ function wysiwyg_add_plugin_settings($profile) {
     // the settings for Drupal plugins with custom, required values.
     $settings_drupal = call_user_func($editor['proxy plugin settings callback'], $editor, $profile, $profile_plugins_drupal);
 
-    drupal_add_js(array('wysiwyg' => array('plugins' => array('format' . $profile->format => array('drupal' => $settings_drupal)))), 'setting');
+    if ($settings_drupal) {
+      drupal_add_js(array('wysiwyg' => array('plugins' => array('format' . $profile->format => array('drupal' => $settings_drupal)))), 'setting');
+    }
   }
 }
 
@@ -547,7 +557,9 @@ function wysiwyg_get_css() {
     return $files;
   }
   // In node form previews, the theme has not been initialized yet.
-  init_theme();
+  if (!empty($_POST)) {
+    init_theme();
+  }
 
   $files = array();
   foreach (drupal_add_css() as $media => $css) {
