@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: German translation of WYSIWYG editor\n"
-"POT-Creation-Date: 2009-11-08 11:59+0100\n"
-"PO-Revision-Date: 2009-11-08 13:05+0100\n"
+"POT-Creation-Date: 2009-11-22 02:28+0100\n"
+"PO-Revision-Date: 2009-11-22 02:32+0100\n"
 "Last-Translator: Thomas Zahreddin <tz@it-arts.org>\n"
 "Language-Team: Alexander Hass + Thomas Zahreddin <tz@it-arts.org>\n"
 "MIME-Version: 1.0\n"
@@ -726,12 +726,11 @@ msgstr "Schriftart"
 msgid "Font size"
 msgstr "Schriftgröße"
 
-# ???
 #: editors/ckeditor.inc:300
 #: editors/fckeditor.inc:232
 #: editors/tinymce.inc:452
 msgid "Font style"
-msgstr "Schriftstil"
+msgstr "Schriftschnitt"
 
 #: editors/ckeditor.inc:301
 #: editors/fckeditor.inc:233
