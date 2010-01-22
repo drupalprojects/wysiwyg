@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-3.x, xxxx-xx-xx
 ---------------------------
+#613480 by TwoD, Dave Reid: Fixed PHP 5.3 compatibility.
 #489156 by sun: Removed orphan global 'showToggle' JS setting.
 #462146 by sun, Niels Hackius: Fixed version detection for CKeditor.
 #545210 by sun: Fixed default value for editor toggle link.
