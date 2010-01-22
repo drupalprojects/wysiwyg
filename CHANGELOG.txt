@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#613480 by TwoD, Dave Reid: Fixed PHP 5.3 compatibility.
 #462146 by TwoD: Cleaned up CKEditor implementation.
 #380586 by SimonEast: Updated YUI editor: Version detection not working.
 #610132 by TwoD: Updated CKEditor 3.0.1, stylesheets and version check.
