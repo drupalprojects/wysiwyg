@@ -7,6 +7,9 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 Wysiwyg 5.x-3.x, xxxx-xx-xx
 ---------------------------
 #613480 by TwoD, Dave Reid: Fixed PHP 5.3 compatibility.
+#462146 by TwoD: Cleaned up CKEditor implementation.
+#610132 by TwoD: Updated CKEditor 3.0.1, stylesheets and version check.
+#620858 by quicksketch: Fixed focus event not firing for CKeditor.
 #489156 by sun: Removed orphan global 'showToggle' JS setting.
 #462146 by sun, Niels Hackius: Fixed version detection for CKeditor.
 #545210 by sun: Fixed default value for editor toggle link.
@@ -21,7 +24,7 @@ by sun: Fixed PHP notice.
 #522440 by authentictech, sun: UX: Fixed user interface for Wysiwyg profiles.
 #507608 by jfh: Added WYMeditor instance API methods.
 #496744 by TwoD: Fixed FCKeditor: "Apply source formatting" not working.
-#462146 by sun: Added CKeditor support.
+#462146 by TwoD, et al: Added support for CKeditor.
 #490270 by sun: Fixed openWYSIWYG displays no buttons by default.
 #490266 by sun: Fixed JS error when wysiwyg profile contains no buttons.
 #400482 by sun: Fixed editor.instance.prepareContent() breaks editor's native
