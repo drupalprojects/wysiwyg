@@ -322,7 +322,7 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
 /**
  * Layout for the buttons in the Wysiwyg Editor profile form.
  */
-function theme_wysiwyg_admin_button_table(&$form) {
+function theme_wysiwyg_admin_button_table($form) {
   $buttons = array();
 
   // Flatten forms array.
@@ -457,7 +457,7 @@ function wysiwyg_profile_overview() {
 /**
  * Return HTML for the Wysiwyg profile overview form.
  */
-function theme_wysiwyg_profile_overview(&$form) {
+function theme_wysiwyg_profile_overview($form) {
   if (!isset($form['formats'])) {
     return;
   }
