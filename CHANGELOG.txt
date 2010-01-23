@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#620176 by sun: Fixed missing Ukrainian in language list.
 #613480 by TwoD, Dave Reid: Fixed PHP 5.3 compatibility.
 #462146 by TwoD: Cleaned up CKEditor implementation.
 #380586 by SimonEast: Updated YUI editor: Version detection not working.
