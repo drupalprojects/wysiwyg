@@ -27,7 +27,6 @@ Drupal.wysiwyg.editor.init.ckeditor = function(settings) {
   }
 };
 
-
 /**
  * Attach this editor to a target element.
  */
