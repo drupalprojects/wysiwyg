@@ -416,6 +416,8 @@ function wysiwyg_profile_overview() {
     '#description' => t('To assign a different editor to a text format, click "delete" to remove the existing first.'),
     '#tree' => TRUE,
   );
+
+  $enable_save = FALSE;
   foreach ($formats as $id => $format) {
     $form['formats'][$id]['name'] = array(
       '#value' => check_plain($format->name),
@@ -433,6 +435,7 @@ function wysiwyg_profile_overview() {
         '#default_value' => '',
         '#options' => $options,
       );
+      $enable_save = TRUE;
     }
     if (isset($profiles[$id]) && !empty($profiles[$id]->editor)) {
       $form['formats'][$id]['edit'] = array(
@@ -444,7 +447,10 @@ function wysiwyg_profile_overview() {
     }
   }
 
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  // Submitting the form when no editors can be selected causes errors.
+  if ($enable_save) {
+    $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  }
   return $form;
 }
 
