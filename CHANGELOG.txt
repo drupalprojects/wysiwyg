@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-3.x, xxxx-xx-xx
 ---------------------------
+#582298 by dereine: Added auto-paste from Word detection for FCKeditor.
 #597852 by sun: Fixed missing Turkish in language list.
 #620176 by sun: Fixed missing Ukrainian in language list.
 #462146 by TwoD: Cleaned up CKEditor implementation.
