@@ -419,6 +419,8 @@ function wysiwyg_profile_overview() {
     '#description' => t('Once an editor has been associated with an input format, the editor association cannot be changed without first deleting the profile and then creating a new one. Delete a profile by clicking on the "delete" link and afterwards, set up a new profile as usual.'),
     '#tree' => TRUE,
   );
+
+  $enable_save = FALSE;
   foreach ($formats as $id => $format) {
     $form['formats'][$id]['name'] = array(
       '#value' => check_plain($format->name),
@@ -439,6 +441,7 @@ function wysiwyg_profile_overview() {
         '#options' => $options,
         '#id' => "edit-editor-$id",
       );
+      $enable_save = TRUE;
     }
     if (isset($profiles[$id]) && !empty($profiles[$id]->editor)) {
       $form['formats'][$id]['edit'] = array(
@@ -450,7 +453,10 @@ function wysiwyg_profile_overview() {
     }
   }
 
-  $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  // Submitting the form when no editors can be selected causes errors.
+  if ($enable_save) {
+    $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  }
   return $form;
 }
 
