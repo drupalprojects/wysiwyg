@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#660080 by TwoD: Fixed Notice: Undefined offset.
 #613922 by TwoD, sun: Fixed PHP warning when saving profiles.
 #582298 by dereine: Added auto-paste from Word detection for FCKeditor.
 #597852 by sun: Fixed missing Turkish in language list.
