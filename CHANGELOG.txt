@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-3.x, xxxx-xx-xx
 ---------------------------
+#659194 by dkg: Changed YUI Editor should check the version in editor-min.js.
 #631494 by TwoD: Fixed multi-site libraries directory failure for WYMeditor.
 #660080 by TwoD: Fixed Notice: Undefined offset.
 #613922 by TwoD, sun: Fixed PHP warning when saving profiles.
