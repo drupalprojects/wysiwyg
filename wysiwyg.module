@@ -132,14 +132,15 @@ function wysiwyg_process_form(&$form) {
           // The element before this element is the target form field.
           $field = &$form[$children[$index - 1]];
 
-          // Disable #resizable to avoid resizable behavior to hi-jack the UI,
-          // but load the behavior, so the 'none' editor can attach/detach it.
+          // If this textarea is #resizable and we will load at least one
+          // editor, then only load the behavior and let the 'none' editor
+          // attach/detach it to avoid hi-jacking the UI. Due to our CSS class
+          // parsing, we can add arbitrary parameters for each input format.
+          // The #resizable property will be removed below, if at least one
+          // profile has been loaded.
           $extra_class = '';
           if (!empty($field['#resizable'])) {
-            // Due to our CSS class parsing, we can add arbitrary parameters
-            // for each input format.
             $extra_class = ' wysiwyg-resizable-1';
-            $field['#resizable'] = FALSE;
             drupal_add_js('misc/textarea.js');
           }
 
@@ -160,6 +161,7 @@ function wysiwyg_process_form(&$form) {
             // Fetch the profile associated to this input format.
             $profile = wysiwyg_get_profile($format);
             if ($profile) {
+              $loaded = TRUE;
               $editor = $profile->editor;
               $status = (int) wysiwyg_user_get_status($profile);
               if (isset($profile->settings['show_toggle'])) {
@@ -188,6 +190,12 @@ function wysiwyg_process_form(&$form) {
               $element[$format]['#attributes']['class'] = (isset($element[$format]['#attributes']['class']) ? $element[$format]['#attributes']['class'] . ' ' : '');
               $element[$format]['#attributes']['class'] .= 'wysiwyg wysiwyg-format-' . $format . ' wysiwyg-editor-' . $editor . ' wysiwyg-field-' . $field['#id'] . ' wysiwyg-status-' . $status . ' wysiwyg-toggle-' . $toggle . $extra_class;
             }
+          }
+
+          // If we loaded at least one editor, then the 'none' editor will
+          // handle resizable textareas instead of core.
+          if (isset($loaded) && !empty($field['#resizable'])) {
+            $field['#resizable'] = FALSE;
           }
         }
         // If this element is 'format', do not recurse further.
