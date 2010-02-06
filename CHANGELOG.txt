@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-3.x, xxxx-xx-xx
 ---------------------------
+#667848 by TwoD, kaakuu: Fixed FCKeditor is not properly detached in IE.
 #695768 by sun: Fixed #resizable removed when no editor profiles are loaded.
 #613922 by TwoD, sun: Fixed PHP warning when saving profiles.
 #582298 by dereine: Added auto-paste from Word detection for FCKeditor.
