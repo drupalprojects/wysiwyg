@@ -125,7 +125,7 @@ function wysiwyg_process_form(&$form) {
       // filter_form() always uses the key 'format'. We need a type-agnostic
       // match to prevent false positives. Also, there must have been at least
       // one element on this level.
-      if ($item === 'format' && $index > 0) {
+      if (($item === 'format' || $item === 'signature_format') && $index > 0) {
         // Make sure we either match a input format selector or input format
         // guidelines (displayed if user has access to one input format only).
         if ((isset($element['#type']) && $element['#type'] == 'fieldset') || isset($element['format']['guidelines'])) {
