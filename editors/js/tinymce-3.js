@@ -16,15 +16,18 @@ Drupal.wysiwyg.editor.init.tinymce = function(settings) {
   if (tinymce.query == 'q') {
     tinymce.query = '';
   }
-  // If JS compression is enabled, TinyMCE is unable to find its own base path
-  // and exec mode, hence we need to define it manually.
+  // If JS compression is enabled, TinyMCE is unable to autodetect its global
+  // settinge, hence we need to define them manually.
   // @todo Move global library settings somewhere else.
-  tinyMCE.baseURL = Drupal.settings.wysiwyg.editorBasePath;
-  tinyMCE.srcMode = (Drupal.settings.wysiwyg.execMode == 'src' ? '_src' : '');
-  tinyMCE.gzipMode = (Drupal.settings.wysiwyg.execMode == 'gzip');
+  tinyMCE.baseURL = settings.global.editorBasePath;
+  tinyMCE.srcMode = (settings.global.execMode == 'src' ? '_src' : '');
+  tinyMCE.gzipMode = (settings.global.execMode == 'gzip');
 
   // Initialize editor configurations.
   for (var format in settings) {
+    if (format == 'global') {
+      continue;
+    };
     tinyMCE.init(settings[format]);
     if (Drupal.settings.wysiwyg.plugins[format]) {
       // Load native external plugins.
