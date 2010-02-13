@@ -1,4 +1,4 @@
-//g$Id$
+// $Id$
 
 Wysiwyg x.x-x.x, xxxx-xx-xx
 ---------------------------
@@ -21,6 +21,7 @@ Wysiwyg 6.x-3.x, xxxx-xx-xx
 #582298 by dereine: Added auto-paste from Word detection for FCKeditor.
 #597852 by sun: Fixed missing Turkish in language list.
 #620176 by sun: Fixed missing Ukrainian in language list.
+#613480 by TwoD, Dave Reid: Fixed PHP 5.3 compatibility.
 #462146 by TwoD: Cleaned up CKEditor implementation.
 #380586 by SimonEast: Updated YUI editor: Version detection not working.
 #610132 by TwoD: Updated CKEditor 3.0.1, stylesheets and version check.
