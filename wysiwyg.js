@@ -1,4 +1,5 @@
 // $Id$
+(function($) {
 
 /**
  * Initialize editor libraries.
@@ -224,3 +225,4 @@ $(document).ready(function () {
  */
 Drupal.wysiwygInit();
 
+})(jQuery);

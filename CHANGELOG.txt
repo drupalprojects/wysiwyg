@@ -14,6 +14,8 @@ Wysiwyg 5.x-3.x, xxxx-xx-xx
 #557090 by TwoD: Fixed Whizzywig 56 instance not removed on detach().
 #667848 by TwoD, kaakuu: Fixed FCKeditor is not properly detached in IE.
 #695768 by sun: Fixed #resizable removed when no editor profiles are loaded.
+#631494 by TwoD: Fixed multi-site libraries directory failure for WYMeditor.
+#660080 by TwoD: Fixed Notice: Undefined offset.
 #613922 by TwoD, sun: Fixed PHP warning when saving profiles.
 #582298 by dereine: Added auto-paste from Word detection for FCKeditor.
 #597852 by sun: Fixed missing Turkish in language list.
@@ -23,6 +25,7 @@ Wysiwyg 5.x-3.x, xxxx-xx-xx
 #380586 by SimonEast: Updated YUI editor: Version detection not working.
 #610132 by TwoD: Updated CKEditor 3.0.1, stylesheets and version check.
 #620858 by quicksketch: Fixed focus event not firing for CKeditor.
+#585932 by sun: Synced various clean-ups from 7.x.
 #489156 by sun: Removed orphan global 'showToggle' JS setting.
 #462146 by sun, Niels Hackius: Fixed version detection for CKeditor.
 #545210 by sun: Fixed default value for editor toggle link.
