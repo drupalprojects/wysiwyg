@@ -61,8 +61,12 @@ function wysiwyg_menu() {
  */
 function wysiwyg_theme() {
   return array(
-    'wysiwyg_profile_overview' => array('arguments' => array('form' => NULL)),
-    'wysiwyg_admin_button_table' => array('arguments' => array('form' => NULL)),
+    'wysiwyg_profile_overview' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'wysiwyg_admin_button_table' => array(
+      'arguments' => array('form' => NULL),
+    ),
     'wysiwyg_dialog_page' => array(
       'arguments' => array('content' => NULL, 'show_messages' => TRUE),
       'file' => 'wysiwyg.dialog.inc',
@@ -293,6 +297,7 @@ function wysiwyg_load_editor($profile) {
 
       drupal_add_js(array('wysiwyg' => array(
         'configs' => array($editor['name'] => array('global' => array(
+          // @todo Move into (global) editor settings.
           // If JS compression is enabled, at least TinyMCE is unable to determine
           // its own base path and exec mode since it can't find the script name.
           'editorBasePath' => base_path() . $editor['library path'],

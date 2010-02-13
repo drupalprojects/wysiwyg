@@ -1,4 +1,5 @@
 // $Id$
+(function($) {
 
 /**
  * Initialize editor libraries.
@@ -215,3 +216,4 @@ Drupal.wysiwyg.getParams = function(element, params) {
  */
 Drupal.wysiwygInit();
 
+})(jQuery);

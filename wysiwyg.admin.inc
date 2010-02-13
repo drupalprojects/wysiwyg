@@ -50,7 +50,6 @@ function wysiwyg_profile_form($form_state, $profile) {
   $editor = wysiwyg_get_editor($profile->editor);
   drupal_set_title(t('%editor profile for %format', array('%editor' => $editor['title'], '%format' => $formats[$profile->format]->name)));
 
-  $form = array();
   $form['format'] = array('#type' => 'value', '#value' => $profile->format);
   $form['input_format'] = array('#type' => 'value', '#value' => $formats[$profile->format]->name);
   $form['editor'] = array('#type' => 'value', '#value' => $profile->editor);
@@ -362,7 +361,6 @@ function theme_wysiwyg_admin_button_table($form) {
  */
 function wysiwyg_profile_overview() {
   include_once './includes/install.inc';
-  $form = array();
 
   // Check which wysiwyg editors are installed.
   $editors = wysiwyg_get_all_editors();
@@ -410,7 +408,7 @@ function wysiwyg_profile_overview() {
     '#description' => (!$count ? t('There are no editor libraries installed currently. The following list contains a list of currently supported editors:') : ''),
     '#weight' => 10,
   );
-  $form['status']['report'] = array('#type' => 'markup', '#value' => theme('status_report', $status));
+  $form['status']['report'] = array('#value' => theme('status_report', $status));
 
   if (!$count) {
     return $form;
@@ -419,9 +417,8 @@ function wysiwyg_profile_overview() {
   $formats = filter_formats();
   $profiles = wysiwyg_profile_load_all();
   $form['formats'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Wysiwyg profiles'),
-    '#description' => t('Once an editor has been associated with an input format, the editor association cannot be changed without first deleting the profile and then creating a new one. Delete a profile by clicking on the "delete" link and afterwards, set up a new profile as usual.'),
+    '#type' => 'item',
+    '#description' => t('To assign a different editor to a text format, click "delete" to remove the existing first.'),
     '#tree' => TRUE,
   );
 
@@ -434,9 +431,7 @@ function wysiwyg_profile_overview() {
     // confusion about disabled selection.
     if (isset($profiles[$id]) && !empty($profiles[$id]->editor)) {
       $form['formats'][$id]['editor'] = array(
-        '#type' => 'markup',
         '#value' => $options[$profiles[$id]->editor],
-        '#id' => "edit-editor-$id",
       );
     }
     else {
@@ -444,7 +439,6 @@ function wysiwyg_profile_overview() {
         '#type' => 'select',
         '#default_value' => '',
         '#options' => $options,
-        '#id' => "edit-editor-$id",
       );
       $enable_save = TRUE;
     }
@@ -484,7 +478,7 @@ function theme_wysiwyg_profile_overview($form) {
       isset($format['delete']) ? drupal_render($format['delete']) : '',
     );
   }
-  $form['formats']['#children'] = theme('table', $header, $rows);
+  $form['formats']['table']['#value'] = theme('table', $header, $rows);
   $output .= drupal_render($form);
   return $output;
 }
