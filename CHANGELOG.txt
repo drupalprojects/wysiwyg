@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#752516 by nquocbao, sun: Fixed file stream warnings in version callbacks.
 
 
 Wysiwyg 6.x-2.1, 2010-03-08
