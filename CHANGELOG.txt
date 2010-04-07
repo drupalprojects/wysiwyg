@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#752516 by nquocbao, sun: Fixed openwysiwyg version callback.
 #753536 by TwoD: Fixed version detection for Whizzywig.
 #752516 by nquocbao, sun: Fixed file stream warnings in version callbacks.
 
