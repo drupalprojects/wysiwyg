@@ -6,6 +6,7 @@ Wysiwyg x.x-x.x, xxxx-xx-xx
 
 Wysiwyg 5.x-3.x, xxxx-xx-xx
 ---------------------------
+#768726 by TwoD: Added TinyMCE AutoResize plugin.
 #781086 by TwoD: Fixed TinyMCE plugin options merged wrongly.
 #737318 by dboune: Fixed CKEditor default skin depends on filesystem order.
 #775608 by TwoD: Fixed FCKEditor crashes IE on save.
