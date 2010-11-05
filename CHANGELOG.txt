@@ -234,6 +234,10 @@ Wysiwyg 6.x-0.3, 2008-09-12
 #227687 by sun: Fixed improperly capitalized package name.
 #288028 by Matthew Davidson: Fixed outdated check for PHP input filter.
 #280727 by sun: Removed gzip compressor from installation instructions.
+
+
+Wysiwyg 5.x-0.2, 2008-07-16
+---------------------------
 by sun: Fixed JavaScript errors when JS aggregation/compression is enabled.
 #268562 by sun: Code clean-up; changed format for custom defined CSS classes
   and removed error-prone auto-layout of buttons in favor of aligning them in
