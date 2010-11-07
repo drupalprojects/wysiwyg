@@ -1,16 +1,12 @@
 // $Id$
 
-Wysiwyg x.x-x.x, xxxx-xx-xx
----------------------------
-
-
 Wysiwyg 5.x-3.x, xxxx-xx-xx
 ---------------------------
-#80170 by sun: Changed dialog/plugin API for Inline API compatibility.
 
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#80170 by sun: Changed dialog/plugin API for Inline API compatibility.
 #803466 by hotspoons: Fixed TinyMCE image map support in advimage plugin.
 #922436 by TwoD: Fixed Whizzywig Uncaught TypeError in Chrome.
 #922520 by TwoD: Fixed Whizzywig is not detached properly.
