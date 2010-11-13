@@ -67,7 +67,11 @@ Drupal.behaviors.attachWysiwyg = function(context) {
       }
     }
     // Detach any editor when the containing form is submitted.
-    $('#' + params.field).parents('form').submit(function () {
+    $('#' + params.field).parents('form').submit(function (event) {
+      // Do not detach if the event was cancelled.
+      if (event.originalEvent.returnValue === false) {
+        return;
+      }
       Drupal.wysiwygDetach(context, params);
     });
   });
