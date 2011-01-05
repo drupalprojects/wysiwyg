@@ -6,13 +6,53 @@
  */
 function wysiwyg_schema() {
   $schema['wysiwyg'] = array(
-    'description' => t('Stores Wysiwyg profiles.'),
+    'description' => 'Stores Wysiwyg profiles.',
     'fields' => array(
       'format' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
       'editor' => array('type' => 'varchar', 'length' => 128, 'not null' => TRUE, 'default' => ''),
       'settings' => array('type' => 'text', 'size' => 'normal'),
     ),
     'primary key' => array('format'),
+  );
+  $schema['wysiwyg_user'] = array(
+    'description' => 'Stores user preferences for wysiwyg profiles.',
+    'fields' => array(
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {users}.uid of the user.',
+      ),
+      'format' => array(
+        'description' => 'The {filter_formats}.format of the text format.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the format is enabled by default.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+    ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'format' => array('format'),
+    ),
+    'foreign keys' => array(
+      'uid' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+      'format' => array(
+        'table' => 'filter_formats',
+        'columns' => array('format' => 'format'),
+      ),
+    ),
   );
   return $schema;
 }
@@ -177,3 +217,52 @@ function wysiwyg_update_6200() {
   return $ret;
 }
 
+/**
+ * Create the {wysiwyg_user} table.
+ */
+function wysiwyg_update_6201() {
+  $ret = array();
+  if (!db_table_exists('wysiwyg_user')) {
+    db_create_table($ret, 'wysiwyg_user', array(
+      'description' => 'Stores user preferences for wysiwyg profiles.',
+      'fields' => array(
+        'uid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'description' => 'The {users}.uid of the user.',
+        ),
+        'format' => array(
+          'description' => 'The {filter_formats}.format of the text format.',
+          'type' => 'int',
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'status' => array(
+          'description' => 'Boolean indicating whether the format is enabled by default.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+          'size' => 'tiny',
+        ),
+      ),
+      'indexes' => array(
+        'uid' => array('uid'),
+        'format' => array('format'),
+      ),
+      'foreign keys' => array(
+        'uid' => array(
+          'table' => 'users',
+          'columns' => array('uid' => 'uid'),
+        ),
+        'format' => array(
+          'table' => 'filter_formats',
+          'columns' => array('format' => 'format'),
+        ),
+      ),
+    ));
+  }
+  return $ret;
+}
