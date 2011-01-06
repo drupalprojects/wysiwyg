@@ -11,6 +11,7 @@ function wysiwyg_schema() {
       'format' => array(
         'description' => 'The {filter_formats}.format of the text format.',
         'type' => 'int',
+        // Primary keys are implicitly not null.
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -48,8 +49,7 @@ function wysiwyg_schema() {
       'format' => array(
         'description' => 'The {filter_formats}.format of the text format.',
         'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
       ),
       'status' => array(
         'description' => 'Boolean indicating whether the format is enabled by default.',
@@ -248,17 +248,16 @@ function wysiwyg_update_6201() {
       'description' => 'Stores user preferences for wysiwyg profiles.',
       'fields' => array(
         'uid' => array(
+          'description' => 'The {users}.uid of the user.',
           'type' => 'int',
           'unsigned' => TRUE,
           'not null' => TRUE,
           'default' => 0,
-          'description' => 'The {users}.uid of the user.',
         ),
         'format' => array(
           'description' => 'The {filter_formats}.format of the text format.',
           'type' => 'int',
-          'not null' => TRUE,
-          'default' => 0,
+          'not null' => FALSE,
         ),
         'status' => array(
           'description' => 'Boolean indicating whether the format is enabled by default.',
