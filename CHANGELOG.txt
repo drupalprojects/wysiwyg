@@ -2,6 +2,7 @@
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#1025296 by TwoD: Updated CKEditor to support iFrame button.
 #737318 by TwoD: Fixed CKEditor default skin array not being reindexed.
 #973808 by David_Rothstein: Fixed CKEditor incorrectly formatting the <br> tag.
 #773856 by Roi Danton: Added CSS path and file documentation.
