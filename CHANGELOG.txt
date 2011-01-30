@@ -2,6 +2,10 @@
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+
+
+Wysiwyg 6.x-2.3, 2011-01-30
+---------------------------
 #1025296 by TwoD: Updated CKEditor to support iFrame button.
 #737318 by TwoD: Fixed CKEditor default skin array not being reindexed.
 by sun: Fixed coding style in wysiwyg_schema().
