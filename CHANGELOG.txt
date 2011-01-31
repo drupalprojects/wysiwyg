@@ -2,6 +2,7 @@
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#1036900 by mattyoung: Minor code clean-up in wysiwyg_tinymce_version().
 
 
 Wysiwyg 6.x-2.3, 2011-01-30
