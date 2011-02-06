@@ -54,7 +54,7 @@ Drupal.wysiwyg.plugins['break'] = {
       elem.parentNode.insertBefore(document.createComment('break'), elem);
       elem.parentNode.removeChild(elem);
     });
-    return $content.html();
+    return $content.xhtml();
   },
 
   /**
