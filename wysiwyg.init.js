@@ -38,9 +38,9 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
         xhtmlContent += '<' + child.nodeName.toLowerCase();
         var attributes = child.attributes;
         for (var j=0; j < attributes.length; j++) {
-          var attribute = attributes[j];
-          var attName = attribute.nodeName.toLowerCase();
-          var attValue = attribute.nodeValue;
+          var attribute = attributes[j],
+            attName = attribute.nodeName.toLowerCase(),
+            attValue = attribute.nodeValue;
           if (attName == 'style' && child.style.cssText) {
             // Todo: not very nice way to handle styles.
             xhtmlContent += ' style="' + child.style.cssText.toLowerCase() + '"';
@@ -49,17 +49,14 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
             xhtmlContent += ' ' + attName + '="' + attValue + '"';
           }
         }
-        var tagName = child.nodeName.toLowerCase();
-        var innerContent = _xhtml(child);
-        var elemClone = child.cloneNode(true);
-        var container = document.createElement('div');
+        var tagName = child.nodeName.toLowerCase(),
+          innerContent = (tagName == 'script' ? child.text  : _xhtml(child)),
+          // Clone the node and get its outerHTML to test if it was self-closed.
+          elemClone = child.cloneNode(false),
+          container = document.createElement('div');
         container.appendChild(elemClone);
-        if (!new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML)) {
-          xhtmlContent += ' />' + innerContent;
-        }
-        else {
-          xhtmlContent += '>' + innerContent + '</' + tagName + '>';
-        }
+        var selfClose = !new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML);
+        xhtmlContent += (selfClose ? ' />' + innerContent : '>' + innerContent + '</' + tagName + '>');
         delete container;
       }
     }
@@ -71,4 +68,27 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
       return _xhtml(this[0]);
     }
   });
+
+  Drupal.wysiwyg.xhtmlToDom = function (content) {
+    // Use a pre element to preserve formatting nodes in IE.
+    var pre = document.createElement('pre');
+    document.body.appendChild(pre);
+    // IE 'normalizes' whitespaces when setting .innerHTML.
+    if (pre.outerHTML) {
+      pre.outerHTML = '<pre id="wysiwyg-pre-element">' + content + '</pre>';
+      delete pre;
+      pre = document.getElementById('wysiwyg-pre-element');
+    }
+    else {
+      pre.innerHTML = content;
+    }
+    var dom = document.createDocumentFragment();
+    while (pre.firstChild) {
+      dom.appendChild(pre.firstChild);
+    }
+    pre.parentNode.removeChild(pre);
+    delete pre;
+    return dom;
+  }
+
 })(jQuery);

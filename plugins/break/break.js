@@ -46,7 +46,10 @@ Drupal.wysiwyg.plugins['break'] = {
    * Replace images with <!--break--> tags in content upon detaching editor.
    */
   detach: function(content, settings, instanceId) {
-    var $content = $('<div>' + content + '</div>'); // No .outerHTML() in jQuery :(
+
+//    var $content = $('<div>' + content + '</div>'); // No .outerHTML() in jQuery :(
+    var node = Drupal.wysiwyg.xhtmlToDom(content);
+    var $content = $(node);
     // #404532: document.createComment() required or IE will strip the comment.
     // #474908: IE 8 breaks when using jQuery methods to replace the elements.
     // @todo Add a generic implementation for all Drupal plugins for this.
