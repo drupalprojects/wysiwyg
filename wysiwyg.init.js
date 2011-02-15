@@ -21,44 +21,50 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
 
   function _xhtml(node) {
     // (v0.4) Written 2006 by Steve Tucker, http://www.stevetucker.co.uk
-    if (!node || node.nodeType != 1) {return '';}
+    if (!node || typeof node.nodeType == 'undefined') {return '';}
+    var xhtmlContent = '', nodeType = node.nodeType;
+    if (nodeType == 3) {
+      // Text node.
+      return node.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    else if (nodeType == 8) {
+      // Comment node.
+      return '<!--' + node.nodeValue + '-->';
+    }
+    else if (nodeType == 1) {
+      xhtmlContent += '<' + node.nodeName.toLowerCase();
+      var attributes = node.attributes;
+      for (var j=0; j < attributes.length; j++) {
+        var attribute = attributes[j],
+          attName = attribute.nodeName.toLowerCase(),
+          attValue = attribute.nodeValue;
+        if (attName == 'style' && child.style.cssText) {
+          // Todo: not very nice way to handle styles.
+          xhtmlContent += ' style="' + child.style.cssText.toLowerCase() + '"';
+        }
+        else if (attValue && attName != 'contenteditable') {
+          xhtmlContent += ' ' + attName + '="' + attValue + '"';
+        }
+      }
+      var tagName = child.nodeName.toLowerCase(),
+        innerContent = (tagName == 'script' ? child.text  : _xhtml(child)),
+        // Clone the node and get its outerHTML to test if it was self-closed.
+        elemClone = child.cloneNode(false),
+        container = document.createElement('div');
+      container.appendChild(elemClone);
+      var selfClosed = !new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML);
+      delete container;
+    }
+    else (
+      // Unknown node type, possible to serialize?
+    }
     var children = node.childNodes;
-    var xhtmlContent = '';
     for (var i = 0; i < children.length; i++) {
       var child = children[i];
-      if (child.nodeType == 3) {
-        // Text node.
-        xhtmlContent += child.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
-      else if (child.nodeType == 8) {
-        // Comment node.
-        xhtmlContent += '<!--' + child.nodeValue + '-->';
-      }
-      else {
-        xhtmlContent += '<' + child.nodeName.toLowerCase();
-        var attributes = child.attributes;
-        for (var j=0; j < attributes.length; j++) {
-          var attribute = attributes[j],
-            attName = attribute.nodeName.toLowerCase(),
-            attValue = attribute.nodeValue;
-          if (attName == 'style' && child.style.cssText) {
-            // Todo: not very nice way to handle styles.
-            xhtmlContent += ' style="' + child.style.cssText.toLowerCase() + '"';
-          }
-          else if (attValue && attName != 'contenteditable') {
-            xhtmlContent += ' ' + attName + '="' + attValue + '"';
-          }
-        }
-        var tagName = child.nodeName.toLowerCase(),
-          innerContent = (tagName == 'script' ? child.text  : _xhtml(child)),
-          // Clone the node and get its outerHTML to test if it was self-closed.
-          elemClone = child.cloneNode(false),
-          container = document.createElement('div');
-        container.appendChild(elemClone);
-        var selfClosed = !new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML);
-        xhtmlContent += (selfClosed ? ' />' + innerContent : '>' + innerContent + '</' + tagName + '>');
-        delete container;
-      }
+      xhtmlContent += _xhtml(child);
+    }
+    if (nodeType == 1) {
+      xhtmlContent += (selfClosed ? ' />' + innerContent : '>' + innerContent + '</' + tagName + '>');
     }
     return xhtmlContent;
   }
