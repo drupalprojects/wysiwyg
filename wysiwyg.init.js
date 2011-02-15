@@ -24,14 +24,14 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
     if (!node || node.nodeType != 1) {return '';}
     var children = node.childNodes;
     var xhtmlContent = '';
-    for (var i=0; i< children.length; i++) {
+    for (var i = 0; i < children.length; i++) {
       var child = children[i];
       if (child.nodeType == 3) {
-        // Text.
+        // Text node.
         xhtmlContent += child.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
       else if (child.nodeType == 8) {
-        // Comment.
+        // Comment node.
         xhtmlContent += '<!--' + child.nodeValue + '-->';
       }
       else {
@@ -55,8 +55,8 @@ Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
           elemClone = child.cloneNode(false),
           container = document.createElement('div');
         container.appendChild(elemClone);
-        var selfClose = !new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML);
-        xhtmlContent += (selfClose ? ' />' + innerContent : '>' + innerContent + '</' + tagName + '>');
+        var selfClosed = !new RegExp('</' + tagName + '>\s*$', 'i').test(container.innerHTML);
+        xhtmlContent += (selfClosed ? ' />' + innerContent : '>' + innerContent + '</' + tagName + '>');
         delete container;
       }
     }
