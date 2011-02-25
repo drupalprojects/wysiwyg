@@ -1,4 +1,3 @@
-// $Id$
 
 // Reset $() to jQuery.  Yuck!
 $ = jQuery;
