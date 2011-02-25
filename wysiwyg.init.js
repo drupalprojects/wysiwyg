@@ -1,4 +1,3 @@
-// $Id$
 
 Drupal.behaviors = Drupal.behaviors || {}; // D5 only.
 
