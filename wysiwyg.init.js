@@ -1,4 +1,3 @@
-// $Id$
 
 jQuery.support = jQuery.support || {}; // D6- only.
 
