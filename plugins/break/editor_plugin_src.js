@@ -1,4 +1,3 @@
-// $Id$
 
 // Import plugin language.
 tinyMCE.importPluginLanguagePack('wysiwyg', 'en');

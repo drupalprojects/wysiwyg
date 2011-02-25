@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Fetch and provide original editor settings as local variable.

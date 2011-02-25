@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * hook_wysiwyg_plugin(). Return an array of editor plugins.
