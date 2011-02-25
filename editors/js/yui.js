@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Attach this editor to a target element.

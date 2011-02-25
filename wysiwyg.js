@@ -1,4 +1,3 @@
-// $Id$
 
 /**
  * Initialize editor libraries.
