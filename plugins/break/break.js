@@ -48,7 +48,7 @@ Drupal.wysiwyg.plugins['break'] = {
   detach: function(content, settings, instanceId) {
 
 //    var $content = $('<div>' + content + '</div>'); // No .outerHTML() in jQuery :(
-    var node = Drupal.wysiwyg.xhtmlToDom(content);
+    var node = Drupal.wysiwyg.utilities.xhtmlToDom(content);
     var $content = $(node);
     // #404532: document.createComment() required or IE will strip the comment.
     // #474908: IE 8 breaks when using jQuery methods to replace the elements.
@@ -57,7 +57,7 @@ Drupal.wysiwyg.plugins['break'] = {
       elem.parentNode.insertBefore(document.createComment('break'), elem);
       elem.parentNode.removeChild(elem);
     });
-    return $content.xhtml();
+    return $content.wysiwygXhtml();
   },
 
   /**

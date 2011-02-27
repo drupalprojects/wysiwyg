@@ -229,6 +229,128 @@ Drupal.wysiwyg.getParams = function(element, params) {
   return params;
 };
 
+Drupal.wysiwyg.utilities = {
+  /**
+   * Serialize a DOM node and its children to an XHTML string.
+   *
+   * Makes sure element and attribute names are lowercased and source formatting
+   * preserved by Drupal.wysiwyg.utilities.xhtmlToDom() stays intact.
+   *
+   * @param node
+   *  A DOM node.
+   *
+   * @returns
+   *  A string containing the XHTML representation of the node, empty
+   *  if the node could not be serialized.
+   */
+  domToXhtml : function (node) {
+    // Inspired by Steve Tucker's innerXHTML, http://www.stevetucker.co.uk.
+    if (!node || typeof node.nodeType == 'undefined') {
+      return '';
+    }
+    var nodeName = node.nodeName.toLowerCase(), xhtmlContent = '', nodeType = node.nodeType;
+    if (nodeType == 3) {
+      // Text node.
+      return node.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    else if (nodeType == 8) {
+      // Comment node.
+      return '<!--' + node.nodeValue + '-->';
+    }
+    else if (nodeType == 1) {
+      // Element node.
+      xhtmlContent += '<' + nodeName;
+      var attributes = node.attributes;
+      for (var j=0; j < attributes.length; j++) {
+        var attrib = attributes[j], attName = attrib.nodeName.toLowerCase(), attValue = attrib.nodeValue;
+        if (attName == 'style' && node.style.cssText) {
+          // IE uppercases style attributes, values must be kept intact.
+          var styles = node.style.cssText.replace(/(^|;)([^\:]+)/g, function (match) {
+            return match.toLowerCase();
+          });
+          xhtmlContent += ' style="' + styles + '"';
+        }
+        else if (attValue && attName != 'contenteditable') {
+          xhtmlContent += ' ' + attName + '="' + attValue + '"';
+        }
+      }
+      // Clone the node and get its outerHTML to test if it was self-closed.
+      var elemClone = node.cloneNode(false), container = document.createElement('div');
+      container.appendChild(elemClone);
+      var selfClosed = !new RegExp('</' + nodeName + '>\s*$', 'i').test(container.innerHTML);
+      delete container;
+    }
+    // IE doesn't set nodeValue for script tags.
+
+    if (nodeName == 'script' && node.nodeValue == '') {
+      xhtmlContent += node.text;
+    }
+    else {
+      // Process children for types that can have them.
+      var children = node.childNodes;
+      var innerContent = '';
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        innerContent += Drupal.wysiwyg.utilities.domToXhtml(child);
+      }
+      if (nodeType == 1) {
+        if (selfClosed) {
+          xhtmlContent += ' />' + innerContent;
+        }
+        else {
+          xhtmlContent += '>' + innerContent + '</' + nodeName + '>';
+        }
+      }
+      else {
+        xhtmlContent += innerContent;
+      }
+    }
+    return xhtmlContent;
+  },
+
+  /**
+   * Deserialize an XHTML string to a DOM node hierarchy.
+   *
+   * Makes sure white-space #text nodes between element nodes are not collapsed
+   * in IE to keep source formatting when re-serialized using
+   * Drupal.wysiwyg.utils.domToXHTML().
+   *
+   * @param content
+   *  A markup string to be deserialized. Must be valid XHTML.
+   *
+   * @returns
+   *  A DocumentFragment containing the deserialized DOM nodes, empty if no
+   *  nodes could be created.
+   */
+  xhtmlToDom : function (content) {
+    // Use a pre element to preserve formatting nodes in IE.
+    var pre = document.createElement('pre');
+    document.body.appendChild(pre);
+    // IE 'normalizes' whitespaces when setting .innerHTML.
+    if (pre.outerHTML) {
+      pre.outerHTML = '<pre id="wysiwyg-pre-element">' + content + '</pre>';
+      delete pre;
+      pre = document.getElementById('wysiwyg-pre-element');
+    }
+    else {
+      pre.innerHTML = content;
+    }
+    var dom = document.createDocumentFragment();
+    while (pre.firstChild) {
+      dom.appendChild(pre.firstChild);
+    }
+    pre.parentNode.removeChild(pre);
+    delete pre;
+    return dom;
+  }
+}
+
+$.fn.extend({
+  wysiwygXhtml : function () {
+    return (this.length > 0 ? Drupal.wysiwyg.utilities.domToXhtml(this[0]) : '');
+  }
+});
+
 /**
  * Allow certain editor libraries to initialize before the DOM is loaded.
  */
