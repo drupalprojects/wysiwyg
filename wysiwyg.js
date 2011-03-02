@@ -230,6 +230,7 @@ Drupal.wysiwyg.getParams = function(element, params) {
 };
 
 Drupal.wysiwyg.utilities = {
+
   /**
    * Serialize a DOM node and its children to an XHTML string.
    *
@@ -263,6 +264,10 @@ Drupal.wysiwyg.utilities = {
       var attributes = node.attributes;
       for (var j=0; j < attributes.length; j++) {
         var attrib = attributes[j], attName = attrib.nodeName.toLowerCase(), attValue = attrib.nodeValue;
+        if ((attName == 'colspan' || attName == 'rowspan') && attValue == 1) {
+          // IE always sets colSpan and rowSpan even if they == 1.
+          continue;
+        }
         if (attName == 'style' && node.style.cssText) {
           // IE uppercases style attributes, values must be kept intact.
           var styles = node.style.cssText.replace(/(^|;)([^\:]+)/g, function (match) {
@@ -318,30 +323,90 @@ Drupal.wysiwyg.utilities = {
    * @param content
    *  A markup string to be deserialized. Must be valid XHTML.
    *
+   * @param context
+   *  A node or document to set as the owning document for the new DOM nodes.
+   *  The passed in object is not directly modified. Defaults to the current
+   *  document.
+   *
    * @returns
    *  A DocumentFragment containing the deserialized DOM nodes, empty if no
    *  nodes could be created.
    */
-  xhtmlToDom : function (content) {
-    // Use a pre element to preserve formatting nodes in IE.
-    var pre = document.createElement('pre');
-    document.body.appendChild(pre);
-    // IE 'normalizes' whitespaces when setting .innerHTML.
-    if (pre.outerHTML) {
-      pre.outerHTML = '<pre id="wysiwyg-pre-element">' + content + '</pre>';
-      delete pre;
-      pre = document.getElementById('wysiwyg-pre-element');
-    }
-    else {
-      pre.innerHTML = content;
-    }
-    var dom = document.createDocumentFragment();
+  xhtmlToDom : function (content, context) {
+    context = (context && context.nodeType == 9 ? context : document)
+    var tags = ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tr', 'th', 'td', 'tfoot'];
+    content = Drupal.wysiwyg.utilities.replaceTags(content, tags);
+    // Use a pre element to preserve formatting (#text) nodes in IE.
+    var $pre = $('<pre>' + content + '</pre>');
+    var pre = $pre[0];
+    var dom = context.createDocumentFragment();
     while (pre.firstChild) {
       dom.appendChild(pre.firstChild);
     }
     pre.parentNode.removeChild(pre);
     delete pre;
-    return dom;
+    return Drupal.wysiwyg.utilities.restoreTags(dom);
+  },
+
+  /**
+   * Replace tags with div placeholders in a markup string.
+   *
+   * IE does not preserve whitespaces (#text nodes) around table-related
+   * tags even when inserted in a pre tag. Instead, use a div with a
+   * 'wasothertag' attribute holding the original tag name.
+   *
+   * @see Drupal.wysiwyg.utilities.restoreTags().
+   *
+   * @param content
+   *  A valid XHTML markup string.
+   *
+   * @param tags
+   *  An array of tag names to be replaced by divs.
+   *
+   * @returns
+   *  An XHTML markup string with all instances of tags replaced by divs.
+   */
+  replaceTags : function (content, tags) {
+    var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div wasothertag="$1" ');
+    replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
+    return replaced;
+  },
+
+  /**
+   * Restores tags previously replaced with div placeholders.
+   *
+   * This function walks the DOM tree and recreates the original nodes.
+   *
+   * @see Drupal.wysiwyg.utilities.replaceTags().
+   *
+   * @param node
+   *  A DOM node to check for div placeholders, including its children.
+   *  This node is not modified.
+   *
+   * @returns
+   *  A clone of the node passed in, after restoring placeholders.
+   */
+  restoreTags : function (node) {
+    var restoredTag = null;
+    if (node.getAttribute && node.getAttribute('wasothertag')) {
+      // Create the new element and transfer attributes from the placeholder.
+      restoredTag = node.ownerDocument.createElement(node.getAttribute('wasothertag'));
+      for (var i = 0; i < node.attributes.length; i++) {
+        var attribute = node.attributes[i];
+        if (attribute.specified && attribute.name.toLowerCase() != 'wasothertag') {
+          restoredTag.setAttribute(attribute.name, attribute.value);
+        }
+      }
+    }
+    else {
+      // The node doesn't support attributes or was not a placeholder.
+      // The node is cloned rather than moved so children are kept in place.
+      restoredTag = node.cloneNode(false);
+    }
+    for (var i = 0; i < node.childNodes.length; i++) {
+      restoredTag.appendChild(Drupal.wysiwyg.utilities.restoreTags(node.childNodes[i]));
+    }
+    return restoredTag;
   }
 }
 
