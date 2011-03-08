@@ -46,18 +46,16 @@ Drupal.wysiwyg.plugins['break'] = {
    * Replace images with <!--break--> tags in content upon detaching editor.
    */
   detach: function(content, settings, instanceId) {
-
-//    var $content = $('<div>' + content + '</div>'); // No .outerHTML() in jQuery :(
-    var node = Drupal.wysiwyg.utilities.xhtmlToDom(content);
-    var $content = $(node);
-    // #404532: document.createComment() required or IE will strip the comment.
-    // #474908: IE 8 breaks when using jQuery methods to replace the elements.
-    // @todo Add a generic implementation for all Drupal plugins for this.
-    $.each($('img.wysiwyg-break', $content), function (i, elem) {
-      elem.parentNode.insertBefore(document.createComment('break'), elem);
-      elem.parentNode.removeChild(elem);
+    return Drupal.wysiwyg.utilities.modifyAsDom(content, function (dom) {
+      var $content = $(dom);
+      // #404532: document.createComment() required or IE will strip the comment.
+      // #474908: IE 8 breaks when using jQuery methods to replace the elements.
+      // @todo Add a generic implementation for all Drupal plugins for this.
+      $.each($('img.wysiwyg-break', $content), function (i, elem) {
+        elem.parentNode.insertBefore(document.createComment('break'), elem);
+        elem.parentNode.removeChild(elem);
+      });
     });
-    return $content.wysiwygXhtml();
   },
 
   /**

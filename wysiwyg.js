@@ -229,7 +229,6 @@ Drupal.wysiwyg.getParams = function(element, params) {
   return params;
 };
 
-Drupal.wysiwyg.utilities = {
 
   /**
    * Serialize a DOM node and its children to an XHTML string.
@@ -244,7 +243,7 @@ Drupal.wysiwyg.utilities = {
    *  A string containing the XHTML representation of the node, empty
    *  if the node could not be serialized.
    */
-  domToXhtml : function (node) {
+  function serialize(node) {
     // Inspired by Steve Tucker's innerXHTML, http://www.stevetucker.co.uk.
     if (!node || typeof node.nodeType == 'undefined') {
       return '';
@@ -296,7 +295,7 @@ Drupal.wysiwyg.utilities = {
       var innerContent = '';
       for (var i = 0; i < children.length; i++) {
         var child = children[i];
-        innerContent += Drupal.wysiwyg.utilities.domToXhtml(child);
+        innerContent += serialize(child);
       }
       if (nodeType == 1) {
         if (selfClosed) {
@@ -311,51 +310,28 @@ Drupal.wysiwyg.utilities = {
       }
     }
     return xhtmlContent;
-  },
+  }
 
-  /**
-   * Deserialize an XHTML string to a DOM node hierarchy.
-   *
-   * Makes sure white-space #text nodes between element nodes are not collapsed
-   * in IE to keep source formatting when re-serialized using
-   * Drupal.wysiwyg.utils.domToXHTML().
-   *
-   * @param content
-   *  A markup string to be deserialized. Must be valid XHTML.
-   *
-   * @param context
-   *  A node or document to set as the owning document for the new DOM nodes.
-   *  The passed in object is not directly modified. Defaults to the current
-   *  document.
-   *
-   * @returns
-   *  A DocumentFragment containing the deserialized DOM nodes, empty if no
-   *  nodes could be created.
-   */
-  xhtmlToDom : function (content, context) {
-    context = (context && context.nodeType == 9 ? context : document)
-    var tags = ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tr', 'th', 'td', 'tfoot'];
-    content = Drupal.wysiwyg.utilities.replaceTags(content, tags);
+  function unserialize(content) {
     // Use a pre element to preserve formatting (#text) nodes in IE.
     var $pre = $('<pre>' + content + '</pre>');
     var pre = $pre[0];
-    var dom = context.createDocumentFragment();
+    var dom = document.createDocumentFragment();
     while (pre.firstChild) {
       dom.appendChild(pre.firstChild);
     }
     pre.parentNode.removeChild(pre);
     delete pre;
-    return Drupal.wysiwyg.utilities.restoreTags(dom);
-  },
+    return dom;
+  }
 
   /**
-   * Replace tags with div placeholders in a markup string.
+   * Masks tags in a markup string as divs.
    *
-   * IE does not preserve whitespaces (#text nodes) around table-related
-   * tags even when inserted in a pre tag. Instead, use a div with a
-   * 'wasothertag' attribute holding the original tag name.
+   * All ocurrances of tags are changed to divs and given an extra
+   * "data-masked" attribute to identify the old tag name.
    *
-   * @see Drupal.wysiwyg.utilities.restoreTags().
+   * @see unmaskTags().
    *
    * @param content
    *  A valid XHTML markup string.
@@ -366,55 +342,68 @@ Drupal.wysiwyg.utilities = {
    * @returns
    *  An XHTML markup string with all instances of tags replaced by divs.
    */
-  replaceTags : function (content, tags) {
-    var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div wasothertag="$1" ');
+  function maskTags(content, tags) {
+    var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div data-masked="$1" ');
     replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
     return replaced;
-  },
+  }
 
   /**
-   * Restores tags previously replaced with div placeholders.
+   * Unmasks tags previously nasked as divs.
    *
-   * This function walks the DOM tree and recreates the original nodes.
+   * Recursively looks for nodes having a "data-masked" attribute and creates
+   * new element nodes of the corresponding type. Other nodes are just cloned.
    *
-   * @see Drupal.wysiwyg.utilities.replaceTags().
+   * @see maskTags().
    *
    * @param node
-   *  A DOM node to check for div placeholders, including its children.
-   *  This node is not modified.
+   *  A DOM node to create a unmasked clone of.
    *
    * @returns
-   *  A clone of the node passed in, after restoring placeholders.
+   *  A clone of the given DOM tree, after unmasking placeholders.
    */
-  restoreTags : function (node) {
-    var restoredTag = null;
-    if (node.getAttribute && node.getAttribute('wasothertag')) {
+  function unmaskTags(node) {
+    var unmaskedTag = null;
+    if (node.getAttribute && node.getAttribute('data-masked')) {
       // Create the new element and transfer attributes from the placeholder.
-      restoredTag = node.ownerDocument.createElement(node.getAttribute('wasothertag'));
+      unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
       for (var i = 0; i < node.attributes.length; i++) {
         var attribute = node.attributes[i];
-        if (attribute.specified && attribute.name.toLowerCase() != 'wasothertag') {
-          restoredTag.setAttribute(attribute.name, attribute.value);
+        if (attribute.specified && attribute.name.toLowerCase() != 'data-masked') {
+          unmaskedTag.setAttribute(attribute.name, attribute.value);
         }
       }
     }
     else {
-      // The node doesn't support attributes or was not a placeholder.
-      // The node is cloned rather than moved so children are kept in place.
-      restoredTag = node.cloneNode(false);
+      // The node doesn't support attributes or was not masked.
+      unmaskedTag = node.cloneNode(false);
     }
     for (var i = 0; i < node.childNodes.length; i++) {
-      restoredTag.appendChild(Drupal.wysiwyg.utilities.restoreTags(node.childNodes[i]));
+      unmaskedTag.appendChild(unmaskTags(node.childNodes[i]));
     }
-    return restoredTag;
+    return unmaskedTag;
+  }
+
+/**
+ *  Utility functions provided by Wysiwyg.
+ */
+Drupal.wysiwyg.utilities = {
+
+  /**
+   * Temporarily convert XHTML to a DOM and back again via a callback.
+   *
+   * Provides a convenient way to modify a valid XHTML string as DOM nodes.
+   * Preserves source indentation and whitespaces as #text nodes in all major
+   * browsers, otherwise not possible using .innerHTML in IE.
+   */
+  modifyAsDom : function (content, callback) {
+    var tags = ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tr', 'th', 'td', 'tfoot'];
+    var dom = unserialize(maskTags(content, tags));
+    callback(dom);
+    var clone = unmaskTags(serialize(dom));
+    return clone;
   }
 }
-
-$.fn.extend({
-  wysiwygXhtml : function () {
-    return (this.length > 0 ? Drupal.wysiwyg.utilities.domToXhtml(this[0]) : '');
-  }
-});
 
 /**
  * Allow certain editor libraries to initialize before the DOM is loaded.
