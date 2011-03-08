@@ -229,160 +229,159 @@ Drupal.wysiwyg.getParams = function(element, params) {
   return params;
 };
 
-
-  /**
-   * Serialize a DOM node and its children to an XHTML string.
-   *
-   * Makes sure element and attribute names are lowercased and source formatting
-   * preserved by Drupal.wysiwyg.utilities.xhtmlToDom() stays intact.
-   *
-   * @param node
-   *  A DOM node.
-   *
-   * @returns
-   *  A string containing the XHTML representation of the node, empty
-   *  if the node could not be serialized.
-   */
-  function serialize(node) {
-    // Inspired by Steve Tucker's innerXHTML, http://www.stevetucker.co.uk.
-    if (!node || typeof node.nodeType == 'undefined') {
-      return '';
-    }
-    var nodeName = node.nodeName.toLowerCase(), xhtmlContent = '', nodeType = node.nodeType;
-    if (nodeType == 3) {
-      // Text node.
-      return node.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-    else if (nodeType == 8) {
-      // Comment node.
-      return '<!--' + node.nodeValue + '-->';
-    }
-    else if (nodeType == 1) {
-      // Element node.
-      xhtmlContent += '<' + nodeName;
-      var attributes = node.attributes;
-      for (var j=0; j < attributes.length; j++) {
-        var attrib = attributes[j], attName = attrib.nodeName.toLowerCase(), attValue = attrib.nodeValue;
-        if ((attName == 'colspan' || attName == 'rowspan') && attValue == 1) {
-          // IE always sets colSpan and rowSpan even if they == 1.
-          continue;
-        }
-        if (attName == 'style' && node.style.cssText) {
-          // IE uppercases style attributes, values must be kept intact.
-          var styles = node.style.cssText.replace(/(^|;)([^\:]+)/g, function (match) {
-            return match.toLowerCase();
-          });
-          xhtmlContent += ' style="' + styles + '"';
-        }
-        else if (attValue && attName != 'contenteditable') {
-          xhtmlContent += ' ' + attName + '="' + attValue + '"';
-        }
+/**
+ * Serialize a DOM node and its children to an XHTML string.
+ *
+ * Makes sure element and attribute names are lowercased and source formatting
+ * preserved by Drupal.wysiwyg.utilities.xhtmlToDom() stays intact.
+ *
+ * @param node
+ *   A DOM node.
+ *
+ * @returns
+ *   A string containing the XHTML representation of the node, empty
+ *   if the node could not be serialized.
+ */
+function serialize(node) {
+  // Inspired by Steve Tucker's innerXHTML, http://www.stevetucker.co.uk.
+  if (!node || typeof node.nodeType == 'undefined') {
+    return '';
+  }
+  var nodeName = node.nodeName.toLowerCase(), xhtmlContent = '', nodeType = node.nodeType;
+  if (nodeType == 3) {
+    // Text node.
+    return node.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  else if (nodeType == 8) {
+    // Comment node.
+    return '<!--' + node.nodeValue + '-->';
+  }
+  else if (nodeType == 1) {
+    // Element node.
+    xhtmlContent += '<' + nodeName;
+    var attributes = node.attributes;
+    for (var j=0; j < attributes.length; j++) {
+      var attrib = attributes[j], attName = attrib.nodeName.toLowerCase(), attValue = attrib.nodeValue;
+      if ((attName == 'colspan' || attName == 'rowspan') && attValue == 1) {
+        // IE always sets colSpan and rowSpan even if they == 1.
+        continue;
       }
-      // Clone the node and get its outerHTML to test if it was self-closed.
-      var elemClone = node.cloneNode(false), container = document.createElement('div');
-      container.appendChild(elemClone);
-      var selfClosed = !new RegExp('</' + nodeName + '>\s*$', 'i').test(container.innerHTML);
-      delete container;
-    }
-    // IE doesn't set nodeValue for script tags.
-
-    if (nodeName == 'script' && node.nodeValue == '') {
-      xhtmlContent += node.text;
-    }
-    else {
-      // Process children for types that can have them.
-      var children = node.childNodes;
-      var innerContent = '';
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i];
-        innerContent += serialize(child);
+      if (attName == 'style' && node.style.cssText) {
+        // IE uppercases style attributes, values must be kept intact.
+        var styles = node.style.cssText.replace(/(^|;)([^\:]+)/g, function (match) {
+          return match.toLowerCase();
+        });
+        xhtmlContent += ' style="' + styles + '"';
       }
-      if (nodeType == 1) {
-        if (selfClosed) {
-          xhtmlContent += ' />' + innerContent;
-        }
-        else {
-          xhtmlContent += '>' + innerContent + '</' + nodeName + '>';
-        }
+      else if (attValue && attName != 'contenteditable') {
+        xhtmlContent += ' ' + attName + '="' + attValue + '"';
+      }
+    }
+    // Clone the node and get its outerHTML to test if it was self-closed.
+    var elemClone = node.cloneNode(false), container = document.createElement('div');
+    container.appendChild(elemClone);
+    var selfClosed = !new RegExp('</' + nodeName + '>\s*$', 'i').test(container.innerHTML);
+    delete container;
+  }
+  // IE doesn't set nodeValue for script tags.
+
+  if (nodeName == 'script' && node.nodeValue == '') {
+    xhtmlContent += node.text;
+  }
+  else {
+    // Process children for types that can have them.
+    var children = node.childNodes;
+    var innerContent = '';
+    for (var i = 0; i < children.length; i++) {
+      var child = children[i];
+      innerContent += serialize(child);
+    }
+    if (nodeType == 1) {
+      if (selfClosed) {
+        xhtmlContent += ' />' + innerContent;
       }
       else {
-        xhtmlContent += innerContent;
-      }
-    }
-    return xhtmlContent;
-  }
-
-  function unserialize(content) {
-    // Use a pre element to preserve formatting (#text) nodes in IE.
-    var $pre = $('<pre>' + content + '</pre>');
-    var pre = $pre[0];
-    var dom = document.createDocumentFragment();
-    while (pre.firstChild) {
-      dom.appendChild(pre.firstChild);
-    }
-    pre.parentNode.removeChild(pre);
-    delete pre;
-    return dom;
-  }
-
-  /**
-   * Masks tags in a markup string as divs.
-   *
-   * All ocurrances of tags are changed to divs and given an extra
-   * "data-masked" attribute to identify the old tag name.
-   *
-   * @see unmaskTags().
-   *
-   * @param content
-   *  A valid XHTML markup string.
-   *
-   * @param tags
-   *  An array of tag names to be replaced by divs.
-   *
-   * @returns
-   *  An XHTML markup string with all instances of tags replaced by divs.
-   */
-  function maskTags(content, tags) {
-    var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div data-masked="$1" ');
-    replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
-    return replaced;
-  }
-
-  /**
-   * Unmasks tags previously nasked as divs.
-   *
-   * Recursively looks for nodes having a "data-masked" attribute and creates
-   * new element nodes of the corresponding type. Other nodes are just cloned.
-   *
-   * @see maskTags().
-   *
-   * @param node
-   *  A DOM node to create a unmasked clone of.
-   *
-   * @returns
-   *  A clone of the given DOM tree, after unmasking placeholders.
-   */
-  function unmaskTags(node) {
-    var unmaskedTag = null;
-    if (node.getAttribute && node.getAttribute('data-masked')) {
-      // Create the new element and transfer attributes from the placeholder.
-      unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
-      for (var i = 0; i < node.attributes.length; i++) {
-        var attribute = node.attributes[i];
-        if (attribute.specified && attribute.name.toLowerCase() != 'data-masked') {
-          unmaskedTag.setAttribute(attribute.name, attribute.value);
-        }
+        xhtmlContent += '>' + innerContent + '</' + nodeName + '>';
       }
     }
     else {
-      // The node doesn't support attributes or was not masked.
-      unmaskedTag = node.cloneNode(false);
+      xhtmlContent += innerContent;
     }
-    for (var i = 0; i < node.childNodes.length; i++) {
-      unmaskedTag.appendChild(unmaskTags(node.childNodes[i]));
-    }
-    return unmaskedTag;
   }
+  return xhtmlContent;
+}
+
+function unserialize(content) {
+  // Use a pre element to preserve formatting (#text) nodes in IE.
+  var $pre = $('<pre>' + content + '</pre>');
+  var pre = $pre[0];
+  var dom = document.createDocumentFragment();
+  while (pre.firstChild) {
+    dom.appendChild(pre.firstChild);
+  }
+  pre.parentNode.removeChild(pre);
+  delete pre;
+  return dom;
+}
+
+/**
+ * Masks tags in a markup string as divs.
+ *
+ * All ocurrances of tags are changed to divs and given an extra
+ * "data-masked" attribute to identify the old tag name.
+ *
+ * @see unmaskTags().
+ *
+ * @param content
+ *   A valid XHTML markup string.
+ *
+ * @param tags
+ *   An array of tag names to be replaced by divs.
+ *
+ * @returns
+ *   An XHTML markup string with all instances of tags replaced by divs.
+ */
+function maskTags(content, tags) {
+  var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div data-masked="$1" ');
+  replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
+  return replaced;
+}
+
+/**
+ * Unmasks tags previously nasked as divs.
+ *
+ * Recursively looks for nodes having a "data-masked" attribute and creates
+ * new element nodes of the corresponding type. Other nodes are just cloned.
+ *
+ * @see maskTags().
+ *
+ * @param node
+ *   A DOM node to create a unmasked clone of.
+ *
+ * @returns
+ *   A clone of the given DOM tree, after unmasking placeholders.
+ */
+function unmaskTags(node) {
+  var unmaskedTag = null;
+  if (node.getAttribute && node.getAttribute('data-masked')) {
+    // Create the new element and transfer attributes from the placeholder.
+    unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
+    for (var i = 0; i < node.attributes.length; i++) {
+      var attribute = node.attributes[i];
+      if (attribute.specified && attribute.name.toLowerCase() != 'data-masked') {
+        unmaskedTag.setAttribute(attribute.name, attribute.value);
+      }
+    }
+  }
+  else {
+    // The node doesn't support attributes or was not masked.
+    unmaskedTag = node.cloneNode(false);
+  }
+  for (var i = 0; i < node.childNodes.length; i++) {
+    unmaskedTag.appendChild(unmaskTags(node.childNodes[i]));
+  }
+  return unmaskedTag;
+}
 
 /**
  *  Utility functions provided by Wysiwyg.
