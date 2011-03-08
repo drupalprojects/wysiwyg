@@ -232,11 +232,10 @@ Drupal.wysiwyg.getParams = function(element, params) {
 /**
  * Serialize a DOM node and its children to an XHTML string.
  *
- * Makes sure element and attribute names are lowercased and source formatting
- * preserved by Drupal.wysiwyg.utilities.xhtmlToDom() stays intact.
+ * Makes sure source formatting is preserved across all major browsers.
  *
  * @param node
- *   A DOM node.
+ *   A DOM node, will not be modified.
  *
  * @returns
  *   A string containing the XHTML representation of the node, empty
@@ -311,6 +310,15 @@ function serialize(node) {
   return xhtmlContent;
 }
 
+/**
+ * Unserialize an XHTML string to one or more DOM nodes.
+ *
+ * @param content
+ *   A valid XHTML string.
+ *
+ * @returns
+ *   One or more DOM nodes wrapped by a DocumentFragment node.
+ */
 function unserialize(content) {
   // Use a pre element to preserve formatting (#text) nodes in IE.
   var $pre = $('<pre>' + content + '</pre>');
@@ -394,6 +402,17 @@ Drupal.wysiwyg.utilities = {
    * Provides a convenient way to modify a valid XHTML string as DOM nodes.
    * Preserves source indentation and whitespaces as #text nodes in all major
    * browsers, otherwise not possible using .innerHTML in IE.
+   *
+   * @param content
+   *   A valid XHTML string.
+   *
+   * @param callback
+   *   A callback function to be called when DOM nodes have been generated.
+   *   The callback may modify the DOM nodes in anyway needed. Its return
+   *   value is ignored.
+   *
+   * @returns
+   *   An XHTML string representing the DOM nodes as left by the callback.
    */
   modifyAsDom : function (content, callback) {
     var tags = ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tr', 'th', 'td', 'tfoot'];
