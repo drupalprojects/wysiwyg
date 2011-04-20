@@ -243,11 +243,17 @@ Drupal.wysiwyg.getParams = function(element, params) {
  */
 function serialize(node) {
   // Inspired by Steve Tucker's innerXHTML, http://www.stevetucker.co.uk.
-  if (!node || typeof node.nodeType == 'undefined') {
+  if (!node || (typeof node.nodeType == 'undefined' && typeof node.length == 'undefined' )) {
     return '';
   }
-  var nodeName = node.nodeName.toLowerCase(), xhtmlContent = '', nodeType = node.nodeType;
-  if (nodeType == 3) {
+  var xhtmlContent = '', nodeType = node.nodeType, nodeName = (node.nodeName ? node.nodeName.toLowerCase() : '');
+  if (typeof nodeType == 'undefined') {
+    for (var i = 0; i < node.length; i++) {
+      xhtmlContent += serialize(node[i]);
+    }
+    return xhtmlContent;
+  }
+  else if (nodeType == 3) {
     // Text node.
     return node.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -323,6 +329,7 @@ function unserialize(content) {
   // Use a pre element to preserve formatting (#text) nodes in IE.
   var $pre = $('<pre>' + content + '</pre>');
   var pre = $pre[0];
+  return pre.childNodes;
   var dom = document.createDocumentFragment();
   while (pre.firstChild) {
     dom.appendChild(pre.firstChild);
@@ -371,7 +378,14 @@ function maskTags(content, tags) {
  */
 function unmaskTags(node) {
   var unmaskedTag = null;
-  if (node.getAttribute && node.getAttribute('data-masked')) {
+  if (node && typeof node.nodeType == 'undefined' && node.length) {
+    var list = [];
+    for (var i = 0; i < node.length; i++) {
+      list[i] = unmaskTags(node[i]);
+    }
+    return list;
+  }
+  else if (node.getAttribute && node.getAttribute('data-masked')) {
     // Create the new element and transfer attributes from the placeholder.
     unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
     for (var i = 0; i < node.attributes.length; i++) {
@@ -416,9 +430,9 @@ Drupal.wysiwyg.utilities = {
    */
   modifyAsDom : function (content, callback) {
     var tags = ['table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tr', 'th', 'td', 'tfoot'];
-    var dom = unserialize(maskTags(content, tags));
+    var dom = unmaskTags(unserialize(maskTags(content, tags)));
     callback(dom);
-    var clone = unmaskTags(serialize(dom));
+    var clone = serialize(dom);
     return clone;
   }
 }
