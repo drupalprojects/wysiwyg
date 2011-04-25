@@ -198,26 +198,27 @@ Drupal.wysiwyg.editor.instance.tinymce = {
     var specialProperties = {
       img: { 'class': 'mceItem' }
     };
-    var $content = $('<div>' + content + '</div>'); // No .outerHTML() in jQuery :(
-    // Find all placeholder/replacement content of Drupal plugins.
-    $content.find('.drupal-content').each(function() {
-      // Recursively process DOM elements below this element to apply special
-      // properties.
-      var $drupalContent = $(this);
-      $.each(specialProperties, function(element, properties) {
-        $drupalContent.find(element).andSelf().each(function() {
-          for (var property in properties) {
-            if (property == 'class') {
-              $(this).addClass(properties[property]);
+    return Drupal.wysiwyg.utilities.modifyAsDom(content, function (dom) {
+      var $content = $(dom);
+      // Find all placeholder/replacement content of Drupal plugins.
+      $content.find('.drupal-content').each(function() {
+        // Recursively process DOM elements below this element to apply special
+        // properties.
+        var $drupalContent = $(this);
+        $.each(specialProperties, function(element, properties) {
+          $drupalContent.find(element).andSelf().each(function() {
+            for (var property in properties) {
+              if (property == 'class') {
+                $(this).addClass(properties[property]);
+              }
+              else {
+                $(this).attr(property, properties[property]);
+              }
             }
-            else {
-              $(this).attr(property, properties[property]);
-            }
-          }
+          });
         });
       });
     });
-    return $content.html();
   },
 
   insert: function(content) {
