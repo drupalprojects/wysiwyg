@@ -378,7 +378,7 @@ function maskTags(content, tags) {
  */
 function unmaskTags(node) {
   var unmaskedTag = null;
-  if (node && typeof node.nodeType == 'undefined' && node.length) {
+  if (node && typeof node.nodeType == 'undefined' && typeof node.length != 'undefined') {
     var list = [];
     for (var i = 0; i < node.length; i++) {
       list[i] = unmaskTags(node[i]);
