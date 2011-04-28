@@ -267,8 +267,9 @@ function serialize(node) {
     var attributes = node.attributes;
     for (var j=0; j < attributes.length; j++) {
       var attrib = attributes[j], attName = attrib.nodeName.toLowerCase(), attValue = attrib.nodeValue;
-      if ((attName == 'colspan' || attName == 'rowspan') && attValue == 1) {
-        // IE always sets colSpan and rowSpan even if they == 1.
+      if ((attValue == 1 && (attName == 'colspan' || attName == 'rowspan' || attName == 'start' || attName == 'loop'))
+       || (attName == 'start' && attValue == 'fileopen') ) {
+        // IE compatibility mode always sets these, despite being defaults.
         continue;
       }
       if (attName == 'style' && node.style.cssText) {
