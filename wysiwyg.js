@@ -272,6 +272,14 @@ function serialize(node) {
         // IE compatibility mode always sets these, despite being defaults.
         continue;
       }
+      if (/^data-wysiwyg-masked-/.test(attName)) {
+        // Ignore these temporary attributes, see below.
+        continue;
+      }
+      if ((attName == 'name' || attName == 'src' || attName == 'href') && attributes['data-wysiwyg-masked-' + attName]) {
+        // Browsers often turn relative URLs into absolute in these attributes.
+        attValue = attributes['data-wysiwyg-masked-' + attName].nodeValue || attValue;
+      }
       if (attName == 'style' && node.style.cssText) {
         // IE uppercases style attributes, values must be kept intact.
         var styles = node.style.cssText.replace(/(^|;)([^\:]+)/g, function (match) {
@@ -360,6 +368,11 @@ function unserialize(content) {
 function maskTags(content, tags) {
   var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div data-masked="$1" ');
   replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
+  // Borrowed from CKEditor to prevent relative URLsi from becoming absolute.
+  var protectAttributeRegex = /<((?:a|area|img|input)\b[\s\S]*?\s)((href|src|name)\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|(?:[^ "'>]+)))([^>]*)>/gi;
+  replaced = replaced.replace(protectAttributeRegex, function(tag, beginning, fullAttr, attrName, end) {
+    return '<' + beginning + fullAttr + ' data-wysiwyg-masked-' + fullAttr + end + '>';
+  });
   return replaced;
 }
 
