@@ -458,8 +458,15 @@ Drupal.wysiwyg.utilities = {
    *
    * @param callback
    *   A callback function to be called when DOM nodes have been generated.
-   *   The callback may modify the DOM nodes in anyway needed. Its return
-   *   value is ignored.
+   *   The callback may modify the DOM nodes in any way needed. If assigning an
+   *   element's src or href attribute and it's important for URIs to be
+   *   relative, also assign the same value to the corresponding
+   *   data-wysiwyg-masked-[attribute name] attribute. It keeps the browser from
+   *   making the URI absolute. The same rule applies when reading these
+   *   attributes. Instead of element.getAttribute('src'), do
+   *   element.getAttribute('data-wysiwyg-protected-src') etc.
+   *
+   *   The callback's return value is ignored.
    *
    * @returns
    *   An XHTML string representing the DOM nodes as left by the callback.
