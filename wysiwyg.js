@@ -374,7 +374,7 @@ function maskTags(content, tags) {
     return '<' + beginning + fullAttr + ' data-wysiwyg-masked-' + fullAttr + end + '>';
   });
   // Escape entities since the innerHTML operation in unserialize mangles them.
-  replaced = replaced.replace(/\&(\w+);/g, "<span data-wysiwyg-protected-entity='1'>$1</span>");
+  replaced = replaced.replace(/\&(\w+|#\d+);/g, "<span data-wysiwyg-protected-entity='1'>$1</span>");
   return replaced;
 }
 
