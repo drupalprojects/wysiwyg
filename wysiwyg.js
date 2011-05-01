@@ -373,6 +373,8 @@ function maskTags(content, tags) {
   replaced = replaced.replace(protectAttributeRegex, function(tag, beginning, fullAttr, attrName, end) {
     return '<' + beginning + fullAttr + ' data-wysiwyg-masked-' + fullAttr + end + '>';
   });
+  // Escape entities since the innerHTML operation in unserialize mangles them.
+  replaced = replaced.replace(/\&(\w+);/g, "<span data-wysiwyg-protected-entity='1'>$1</span>");
   return replaced;
 }
 
@@ -399,23 +401,43 @@ function unmaskTags(node) {
     }
     return list;
   }
-  else if (node.getAttribute && node.getAttribute('data-masked')) {
-    // Create the new element and transfer attributes from the placeholder.
-    unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
-    for (var i = 0; i < node.attributes.length; i++) {
-      var attribute = node.attributes[i];
-      if (attribute.specified && attribute.name.toLowerCase() != 'data-masked') {
-        unmaskedTag.setAttribute(attribute.name, attribute.value);
+  else if (node.getAttribute) {
+    if (node.getAttribute('data-masked')) {
+      // Create the new element and transfer attributes from the placeholder.
+      unmaskedTag = node.ownerDocument.createElement(node.getAttribute('data-masked'));
+      for (var i = 0; i < node.attributes.length; i++) {
+        var attribute = node.attributes[i];
+        if (attribute.specified && attribute.name.toLowerCase() != 'data-masked') {
+          unmaskedTag.setAttribute(attribute.name, attribute.value);
+        }
       }
     }
+    else if (node.getAttribute('data-wysiwyg-protected-entity')) {
+      // Recreate the entity as a text node, will be merged with siblings later.
+      // Text nodes can't have children so return right away.
+      return document.createTextNode('&' + node.innerText + ';');
+    }
+    else {
+      // The node was not masked, just clone it.
+      unmaskedTag = node.cloneNode(false);
+    }
+  }
+  else if (node.nodeType == 3 && node.nodeValue == '') {
+    // Skip empty text nodes.
+    return null;
   }
   else {
-    // The node doesn't support attributes or was not masked.
+    // The node doesn't support attributes, just clone it.
     unmaskedTag = node.cloneNode(false);
   }
   for (var i = 0; i < node.childNodes.length; i++) {
-    unmaskedTag.appendChild(unmaskTags(node.childNodes[i]));
+    var clonedChild = unmaskTags(node.childNodes[i]);
+    if (clonedChild) {
+      unmaskedTag.appendChild(clonedChild);
+    }
   }
+  // Merge text nodes.
+  unmaskedTag.normalize();
   return unmaskedTag;
 }
 
