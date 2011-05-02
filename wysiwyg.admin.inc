@@ -6,9 +6,9 @@
  */
 
 /**
- * Form builder for Wysiwyg profile form.
+ * Prepare default properties for profile.
  */
-function wysiwyg_profile_form($form, &$form_state, $profile) {
+function wysiwyg_profile_default($profile) {
   // Merge in defaults.
   $profile = (array) $profile;
   $profile += array(
@@ -26,7 +26,7 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
     'language' => 'en',
     'access' => 1,
     'access_pages' => "node/*\nuser/*\ncomment/*",
-    'buttons' => array(),
+    'toolbar' => array(),
     'toolbar_loc' => 'top',
     'toolbar_align' => 'left',
     'path_loc' => 'bottom',
@@ -44,6 +44,15 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
     'css_classes' => NULL,
   );
   $profile = (object) $profile;
+  return $profile;
+}
+
+/**
+ * Form builder for Wysiwyg profile form.
+ */
+function wysiwyg_profile_form($form, &$form_state, $profile) {
+  $profile = wysiwyg_profile_default($profile);
+  $module_path = drupal_get_path('module', 'wysiwyg');
 
   $formats = filter_formats();
   $editor = wysiwyg_get_editor($profile->editor);
@@ -110,50 +119,118 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
   asort($predefined);
   $form['basic']['language']['#options'] = $predefined;
 
-  $form['buttons'] = array(
+  $form['extensions'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Buttons and plugins'),
+    '#title' => t('Extensions'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#tree' => TRUE,
     '#theme' => 'wysiwyg_admin_button_table',
   );
 
+  // Retrieve all available extensions and buttons.
   $plugins = wysiwyg_get_plugins($profile->editor);
-  // Generate the button list.
+  $buttons = array();
   foreach ($plugins as $name => $meta) {
     if (isset($meta['buttons']) && is_array($meta['buttons'])) {
       foreach ($meta['buttons'] as $button => $title) {
-        $icon = '';
-        if (!empty($meta['path'])) {
-          // @todo Button icon locations are different in editors, editor versions,
-          //   and contrib/custom plugins (like Image Assist, f.e.).
-          $img_src = $meta['path'] . "/images/$name.gif";
-          // Handle plugins that have more than one button.
-          if (!file_exists($img_src)) {
-            $img_src = $meta['path'] . "/images/$button.gif";
-          }
-          $icon = file_exists($img_src) ? '<img src="' . base_path() . $img_src . '" title="' . $button . '" style="border: 1px solid grey; vertical-align: middle;" />' : '';
-        }
-        $title = (isset($meta['url']) ? l($title, $meta['url'], array('target' => '_blank')) : $title);
-        $title = (!empty($icon) ? $icon . ' ' . $title : $title);
-        $form['buttons'][$name][$button] = array(
-          '#type' => 'checkbox',
-          '#title' => $title,
-          '#default_value' => !empty($profile->settings['buttons'][$name][$button]) ? $profile->settings['buttons'][$name][$button] : FALSE,
+        $buttons[] = array(
+          'plugin' => $name,
+          'button' => $button,
+          'title' => $title,
         );
       }
     }
-    else if (isset($meta['extensions']) && is_array($meta['extensions'])) {
+    if (isset($meta['extensions']) && is_array($meta['extensions'])) {
       foreach ($meta['extensions'] as $extension => $title) {
-        $form['buttons'][$name][$extension] = array(
+        $form['extensions'][$name][$extension] = array(
           '#type' => 'checkbox',
           '#title' => isset($meta['url']) ? l($title, $meta['url'], array('target' => '_blank')) : $title,
-          '#default_value' => !empty($profile->settings['buttons'][$name][$extension]) ? $profile->settings['buttons'][$name][$extension] : FALSE,
+          '#default_value' => !empty($profile->settings['extensions'][$name][$extension]) ? $profile->settings['extensions'][$name][$extension] : 0,
         );
       }
     }
   }
+  // Hide the extensions fieldset if there are no extensions.
+  if (!element_children($form['extensions'])) {
+    $form['extensions']['#access'] = FALSE;
+  }
+
+  $toolbar_support = array(
+    'toolbar' => $profile->settings['toolbar'],
+    'toolbar rows' => !empty($editor['toolbar rows']),
+    'toolbar groups' => !empty($editor['toolbar groups']),
+    'toolbar separator' => !empty($editor['toolbar separator']),
+  );
+  // Separator.
+  if ($toolbar_support['toolbar separator']) {
+    array_unshift($buttons, array(
+      'plugin' => 'default',
+      'button' => 'separator',
+      'title' => t('Separator'),
+    ));
+  }
+
+  $form['toolbar_designer'] = array(
+    '#type' => 'container',
+    '#id' => 'wysiwyg-toolbar-designer',
+    '#access' => !empty($buttons),
+  );
+  $form['toolbar_designer']['available'] = array(
+    '#type' => 'item',
+    '#title' => t('Available buttons'),
+    '#id' => 'toolbar-available-buttons',
+  );
+  foreach ($buttons as $button) {
+    $form['toolbar_designer']['available'][$button['plugin']][$button['button']] = array(
+      '#theme' => 'html_tag',
+      '#tag' => 'span',
+      '#value' => check_plain($button['title']),
+      '#attributes' => array('class' => array('wysiwyg-button', 'wysiwyg-button-' . $button['plugin'] . '-' . $button['button'])),
+    );
+  }
+  $form['toolbar_designer']['toolbar'] = array(
+    '#type' => 'item',
+    '#title' => t('Toolbar'),
+  );
+  $form['toolbar_designer']['toolbar']['toolbar'] = array(
+    '#markup' => '<div id="toolbar-rows"></div>',
+  );
+  $form['toolbar_designer']['toolbar']['actions'] = array(
+    '#type' => 'container',
+    '#id' => 'toolbar-actions',
+  );
+  $form['toolbar_designer']['toolbar']['actions']['add-row'] = array(
+    '#type' => 'link',
+    '#title' => t('Add new row'),
+    '#href' => '#',
+    '#attributes' => array(
+      'class' => array('add', 'add-toolbar-row'),
+    ),
+  );
+  $form['toolbar_designer']['toolbar']['templates'] = array(
+    '#markup' => '<div class="toolbar-row-template">
+  <a href="javascript:;" class="row-handler handler">&nbsp;</a>
+  <a href="javascript:;" class="add add-group">&nbsp;</a>
+</div>
+<div class="toolbar-group-template">
+  <a href="javascript:;" class="group-handler handler">&nbsp;</a>
+</div>
+',
+  );
+
+  $form['toolbar_designer']['#attached']['js'][] = array(
+    'data' => array('wysiwyg_toolbar' => $toolbar_support),
+    'type' => 'setting',
+  );
+  $form['toolbar_designer']['#attached']['library'][] = array('system', 'ui.droppable');
+  $form['toolbar_designer']['#attached']['library'][] = array('system', 'ui.sortable');
+  $form['toolbar_designer']['#attached']['js'][] = $module_path . '/wysiwyg.admin.js';
+  $form['toolbar_designer']['#attached']['css'][] = $module_path . '/wysiwyg.admin.css';
+  $form['toolbar_designer']['_toolbar'] = array(
+    '#type' => 'hidden',
+    '#attributes' => array('id' => 'edit-toolbar'),
+  );
 
   $form['appearance'] = array(
     '#type' => 'fieldset',
@@ -308,15 +385,44 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
  * @see wysiwyg_profile_form()
  */
 function wysiwyg_profile_form_submit($form, &$form_state) {
-  $values = $form_state['values'];
-  if (isset($values['buttons'])) {
+  $values = &$form_state['values'];
+  if (isset($values['extensions'])) {
     // Store only enabled buttons for each plugin.
-    foreach ($values['buttons'] as $plugin => $buttons) {
-      $values['buttons'][$plugin] = array_filter($values['buttons'][$plugin]);
+    foreach ($values['extensions'] as $plugin => $buttons) {
+      $values['extensions'][$plugin] = array_filter($values['extensions'][$plugin]);
     }
     // Store only enabled plugins.
-    $values['buttons'] = array_filter($values['buttons']);
+    $values['extensions'] = array_filter($values['extensions']);
   }
+  else {
+    $values['extensions'] = array();
+  }
+
+  // Restore toolbar array
+  $raw_toolbar = explode("\n", trim($values['toolbar']));
+  $values['toolbar'] = array();
+  foreach ($raw_toolbar as $raw_row) {
+    $row = array();
+    foreach (explode('|', trim($raw_row, '|')) as $raw_group) {
+      $group = array();
+      foreach (explode(',', trim($raw_group, ',')) as $button) {
+        list($plugin, $name) = explode('.', $button, 2);
+        $group[] = array(
+          'button' => $name,
+          'plugin' => $plugin,
+        );
+      }
+      if ($group) {
+        $row[] = $group;
+      }
+    }
+    if ($row) {
+      $values['toolbar'][] = $row;
+    }
+  }
+  // Remove available plugins/button information.
+  unset($values['buttons']);
+
   // Remove any white-space from 'block_formats' setting, since editor
   // implementations rely on a comma-separated list to explode().
   $values['block_formats'] = preg_replace('@\s+@', '', $values['block_formats']);
@@ -327,9 +433,8 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
   $editor = $values['editor'];
   unset($values['format'], $values['input_format'], $values['editor']);
 
-  // Remove FAPI values.
-  // @see system_settings_form_submit()
-  unset($values['submit'], $values['form_id'], $values['op'], $values['form_token'], $values['form_build_id']);
+  // Remove internal Form API values.
+  form_state_values_clean($form_state);
 
   // Insert new profile data.
   db_merge('wysiwyg')

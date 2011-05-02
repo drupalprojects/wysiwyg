@@ -19,6 +19,9 @@ function wysiwyg_fckeditor_editor() {
         'files' => array('fckeditor.js'),
       ),
     ),
+    'toolbar groups' => TRUE,
+    'toolbar rows' => TRUE,
+    'toolbar separator' => TRUE,
     'version callback' => 'wysiwyg_fckeditor_version',
     'themes callback' => 'wysiwyg_fckeditor_themes',
     'settings callback' => 'wysiwyg_fckeditor_settings',
@@ -138,32 +141,47 @@ function wysiwyg_fckeditor_settings($editor, $config, $theme) {
 
   // Use our custom toolbar set.
   $settings['ToolbarSet'] = 'Wysiwyg';
-  // Populate our custom toolbar set for fckeditor.config.js.
-  $settings['buttons'] = array();
-  if (!empty($config['buttons'])) {
-    $plugins = wysiwyg_get_plugins($editor['name']);
-    foreach ($config['buttons'] as $plugin => $buttons) {
-      foreach ($buttons as $button => $enabled) {
-        // Iterate separately over buttons and extensions properties.
-        foreach (array('buttons', 'extensions') as $type) {
-          // Skip unavailable plugins.
-          if (!isset($plugins[$plugin][$type][$button])) {
-            continue;
-          }
-          // Add buttons.
-          if ($type == 'buttons') {
-            $settings['buttons'][] = $button;
-          }
-          // Allow plugins to add or override global configuration settings.
-          if (!empty($plugins[$plugin]['options'])) {
-            $settings = array_merge($settings, $plugins[$plugin]['options']);
-          }
-        }
+  $toolbar = array();
+  $plugins = wysiwyg_get_plugins($editor['name']);
+  foreach ($config['extensions'] as $plugin => $buttons) {
+    foreach ($buttons as $button => $enabled) {
+      if (!isset($plugins[$plugin]['extensions'][$button])) {
+        continue;
+      }
+      // Allow plugins to add or override global configuration settings.
+      if (!empty($plugins[$plugin]['options'])) {
+        $settings = array_merge($settings, $plugins[$plugin]['options']);
       }
     }
   }
-  // For now, all buttons are placed into one row.
-  $settings['buttons'] = array($settings['buttons']);
+
+  foreach ($config['toolbar'] as $row) {
+    foreach ($row as $buttons) {
+      $group = array();
+      foreach ($buttons as $button_config) {
+        $plugin = $button_config['plugin'];
+        $button = $button_config['button'];
+        if ($button == 'separator') {
+          $group[] = '-';
+          continue;
+        }
+        if (!isset($plugins[$plugin]['buttons'][$button])) {
+          continue;
+        }
+        $group[] = $button;
+        // Allow plugins to add or override global configuration settings.
+        if (!empty($plugins[$plugin]['options'])) {
+          $settings = array_merge($settings, $plugins[$plugin]['options']);
+        }
+      }
+      $toolbar[] = $group;
+    }
+    $toolbar[] = '/';
+  }
+  // Remove the last '/'.
+  array_pop($toolbar);
+
+  $settings['ToolbarSets']['Wysiwyg'] = $toolbar;
 
   return $settings;
 }

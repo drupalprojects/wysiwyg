@@ -155,11 +155,11 @@ function wysiwyg_markitup_settings($editor, $config, $theme) {
     ),
   );
   $settings['markupSet'] = array();
-  if (!empty($config['buttons'])) {
-    foreach ($config['buttons'] as $plugin) {
-      foreach ($plugin as $button => $enabled) {
-        if (isset($default_buttons[$button])) {
-          $settings['markupSet'][$button] = $default_buttons[$button];
+  if (!empty($config['toolbar'])) {
+    foreach ($config['toolbar'] as $row) {
+      foreach ($row as $group) {
+        foreach ($group as $button) {
+          $settings['markupSet'][$button['button']] = $default_buttons[$button['button']];
         }
       }
     }

@@ -66,12 +66,16 @@ function wysiwyg_nicedit_settings($editor, $config, $theme) {
 
   // Add configured buttons or all available.
   $settings['buttonList'] = array();
-  if (!empty($config['buttons'])) {
+  if (!empty($config['toolbar'])) {
     $buttons = array();
-    foreach ($config['buttons'] as $plugin) {
-      $buttons = array_merge($buttons, $plugin);
+    foreach ($config['toolbar'] as $row) {
+      foreach ($row as $group) {
+        foreach ($group as $button) {
+          $buttons[] = $button['button'];
+        }
+      }
     }
-    $settings['buttonList'] = array_keys($buttons);
+    $settings['buttonList'] = $buttons;
   }
 
   // Add editor content stylesheet.

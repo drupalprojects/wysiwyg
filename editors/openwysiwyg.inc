@@ -20,6 +20,8 @@ function wysiwyg_openwysiwyg_editor() {
         'files' => array('wysiwyg.js'),
       ),
     ),
+    'toolbar rows' => TRUE,
+    'toolbar separator' => TRUE,
     'version callback' => 'wysiwyg_openwysiwyg_version',
     'themes callback' => 'wysiwyg_openwysiwyg_themes',
     'settings callback' => 'wysiwyg_openwysiwyg_settings',
@@ -108,21 +110,25 @@ function wysiwyg_openwysiwyg_settings($editor, $config, $theme) {
   }
 
   $settings['Toolbar'] = array();
-  if (!empty($config['buttons'])) {
+  if (!empty($config['toolbar'])) {
     $plugins = wysiwyg_get_plugins($editor['name']);
-    foreach ($config['buttons'] as $plugin => $buttons) {
-      foreach ($buttons as $button => $enabled) {
-        foreach (array('buttons', 'extensions') as $type) {
+    foreach ($config['toolbar'] as $row) {
+      $toolbar_row = array();
+      foreach ($row as $buttons) {
+        foreach ($buttons as $button_config) {
           // Skip unavailable plugins.
-          if (!isset($plugins[$plugin][$type][$button])) {
+          $plugin = $button_config['plugin'];
+          $button = $button_config['button'];
+          if ($button == 'separator') {
+            $toolbar_row[] = 'seperator';
+          }
+          elseif (!isset($plugins[$plugin]['buttons'][$button])) {
             continue;
           }
-          // Add buttons.
-          if ($type == 'buttons') {
-            $settings['Toolbar'][0][] = $button;
-          }
+          $toolbar_row[] = $button;
         }
       }
+      $settings['Toolbar'][] = $toolbar_row;
     }
   }
 

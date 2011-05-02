@@ -27,6 +27,9 @@ function wysiwyg_ckeditor_editor() {
         ),
       ),
     ),
+    'toolbar groups' => TRUE,
+    'toolbar rows' => TRUE,
+    'toolbar separator' => TRUE,
     'version callback' => 'wysiwyg_ckeditor_version',
     'themes callback' => 'wysiwyg_ckeditor_themes',
     'settings callback' => 'wysiwyg_ckeditor_settings',
@@ -191,49 +194,62 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
     $settings['toolbarLocation'] = $config['toolbar_loc'];
   }
 
-  $settings['toolbar'] = array();
-  if (!empty($config['buttons'])) {
-    $extra_plugins = array();
-    $plugins = wysiwyg_get_plugins($editor['name']);
-    foreach ($config['buttons'] as $plugin => $buttons) {
-      foreach ($buttons as $button => $enabled) {
-        // Iterate separately over buttons and extensions properties.
-        foreach (array('buttons', 'extensions') as $type) {
-          // Skip unavailable plugins.
-          if (!isset($plugins[$plugin][$type][$button])) {
-            continue;
-          }
-          // Add buttons.
-          if ($type == 'buttons') {
-            $settings['toolbar'][] = $button;
-          }
-          // Add external Drupal plugins to the list of extensions.
-          if ($type == 'buttons' && !empty($plugins[$plugin]['proxy'])) {
-            $extra_plugins[] = $button;
-          }
-          // Add external plugins to the list of extensions.
-          elseif ($type == 'buttons' && empty($plugins[$plugin]['internal'])) {
-            $extra_plugins[] = $plugin;
-          }
-          // Add internal buttons that also need to be loaded as extension.
-          elseif ($type == 'buttons' && !empty($plugins[$plugin]['load'])) {
-            $extra_plugins[] = $plugin;
-          }
-          // Add plain extensions.
-          elseif ($type == 'extensions' && !empty($plugins[$plugin]['load'])) {
-            $extra_plugins[] = $plugin;
-          }
-          // Allow plugins to add or override global configuration settings.
-          if (!empty($plugins[$plugin]['options'])) {
-            $settings = array_merge($settings, $plugins[$plugin]['options']);
-          }
-        }
+  $toolbar = array();
+  $extra_plugins = array();
+  $plugins = wysiwyg_get_plugins($editor['name']);
+  foreach ($config['extensions'] as $plugin => $buttons) {
+    foreach ($buttons as $button => $enabled) {
+      if (!isset($plugins[$plugin]['extensions'][$button])) {
+        continue;
+      }
+      // Add plain extensions.
+      if (!empty($plugins[$plugin]['load'])) {
+        $extra_plugins[] = $plugin;
+      }
+      // Allow plugins to add or override global configuration settings.
+      if (!empty($plugins[$plugin]['options'])) {
+        $settings = array_merge($settings, $plugins[$plugin]['options']);
       }
     }
-    if (!empty($extra_plugins)) {
-      $settings['extraPlugins'] = implode(',', $extra_plugins);
-    }
   }
+
+  foreach ($config['toolbar'] as $row) {
+    foreach ($row as $buttons) {
+      $group = array();
+      foreach ($buttons as $button_config) {
+        $plugin = $button_config['plugin'];
+        $button = $button_config['button'];
+        if ($button == 'separator') {
+          $group[] = '-';
+          continue;
+        }
+        if (!isset($plugins[$plugin]['buttons'][$button])) {
+          continue;
+        }
+        $group[] = $button;
+
+        // Add external Drupal plugins to the list of extensions.
+        if (!empty($plugins[$plugin]['proxy']) || empty($plugins[$plugin]['internal']) || !empty($plugins[$plugin]['load'])) {
+          $extra_plugins[] = $button;
+        }
+        // Allow plugins to add or override global configuration settings.
+        if (!empty($plugins[$plugin]['options'])) {
+          $settings = array_merge($settings, $plugins[$plugin]['options']);
+        }
+      }
+      $toolbar[] = $group;
+    }
+    $toolbar[] = '/';
+  }
+
+  // Remove the last '/'.
+  array_pop($toolbar);
+  $settings['toolbar'] = $toolbar;
+
+  if (!empty($extra_plugins)) {
+    $settings['extraPlugins'] = implode(',', array_unique($extra_plugins));
+  }
+
   // For now, all buttons are placed into one row.
   $settings['toolbar'] = array($settings['toolbar']);
 
