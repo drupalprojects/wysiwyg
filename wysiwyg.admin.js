@@ -123,7 +123,12 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
       helper: 'clone',
       connectToSortable: '.toolbar-group',
       revert: 'invalid',
-      addClasses: false
+      addClasses: false,
+      start: function(event, ui) {
+        // Workaround for jQuery UI bug fixed in version 1.8.11.
+        // @see http://bugs.jqueryui.com/ticket/5811
+        $('#toolbar-rows .toolbar-group').sortable('refreshPositions');
+      }
     });
 
     availableButtons.droppable({
