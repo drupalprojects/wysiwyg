@@ -398,8 +398,8 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
     $values['extensions'] = array();
   }
 
-  // Restore toolbar array
-  $raw_toolbar = explode("\n", trim($values['toolbar']));
+  // Restore toolbar array.
+  $raw_toolbar = explode("\n", trim(preg_replace('/\r/','', $values['toolbar'])));
   $values['toolbar'] = array();
   foreach ($raw_toolbar as $raw_row) {
     $row = array();
