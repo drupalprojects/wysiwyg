@@ -8,7 +8,7 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
     var designArea = $('#toolbar-rows');
     var changeNotification = $('#wysiwyg-toolbar-designer div.warning');
     var availableButtons = $('#toolbar-available-buttons');
-    var separator = $('.wysiwyg-button-default-Separator',availableButtons);
+    var separator = $('.wysiwyg-button-default-separator', availableButtons);
 
     var createRow = function(noGroup) {
       var row = $('.toolbar-row-template',workspace).clone().removeClass('toolbar-row-template');
