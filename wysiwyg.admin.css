@@ -45,7 +45,7 @@
 #wysiwyg-toolbar-designer .add {
   display: inline-block;
   background: transparent url(images/add.png) no-repeat;
-  width: 16px;
+  text-indent: 18px;
   height: 16px;
   text-decoration: none;
   outline: none;
