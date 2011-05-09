@@ -250,9 +250,6 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
     $settings['extraPlugins'] = implode(',', array_unique($extra_plugins));
   }
 
-  // For now, all buttons are placed into one row.
-  $settings['toolbar'] = array($settings['toolbar']);
-
   return $settings;
 }
 

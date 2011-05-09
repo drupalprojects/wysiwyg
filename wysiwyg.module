@@ -465,7 +465,7 @@ function wysiwyg_add_plugin_settings($profile) {
           if ($plugin === $proxy) {
             continue;
           }
-          $profile_plugins_native[$plugin] = $plugins[$plugin];
+          $profile_plugins_native[$plugin] = $plugins[$editor['name']][$plugin];
         }
       }
     }

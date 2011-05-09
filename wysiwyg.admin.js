@@ -143,7 +143,7 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
 
         var buttons = $('.toolbar-button', item);
         if (item.hasClass('toolbar-button')) {
-          buttons.add(item);
+          buttons = buttons.add(item);
         }
 
         // Remove each button and enable in template.
@@ -177,21 +177,25 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
 
     $('#wysiwyg-profile-form').submit(function() {
       // Prepare toolbar data to submit.
-      var toolbar = "";
+      var toolbar = [];
       designArea.find('.toolbar-row').each(function(key,rowDom){
-        var row = "";
+        var row = [];
         $('.toolbar-group',rowDom).each(function(key,groupDom){
-          var group = "";
+          var group = [];
           $('.wysiwyg-button',groupDom).each(function(key,button){
             var cls = /wysiwyg-button-([^-]+)-([^\s]+)/.exec($(button).attr('class'));
-            group += cls[1] + "." + cls[2] + ",";
+            group.push(cls[1] + "." + cls[2]);
           })
-          row += group + "|";
+          if (group.length > 0) {
+            row.push(group.join(','));
+          }
         });
-        toolbar += row + "\n";
+        if (row.length > 0) {
+          toolbar.push(row.join('|'));
+        }
       });
       // Assign to hidden field.
-      $('#edit-toolbar').val(toolbar);
+      $('#edit-toolbar').val(toolbar.join('\n'));
     });
 
     reset();

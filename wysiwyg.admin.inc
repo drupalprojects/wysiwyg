@@ -189,18 +189,18 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
       '#attributes' => array('class' => array('wysiwyg-button', 'wysiwyg-button-' . $button['plugin'] . '-' . $button['button'])),
     );
   }
-  $form['toolbar_designer']['toolbar'] = array(
+  $form['toolbar_designer']['stage'] = array(
     '#type' => 'item',
     '#title' => t('Toolbar'),
   );
-  $form['toolbar_designer']['toolbar']['toolbar'] = array(
+  $form['toolbar_designer']['stage']['rows'] = array(
     '#markup' => '<div id="toolbar-rows"></div>',
   );
-  $form['toolbar_designer']['toolbar']['actions'] = array(
+  $form['toolbar_designer']['stage']['actions'] = array(
     '#type' => 'container',
     '#id' => 'toolbar-actions',
   );
-  $form['toolbar_designer']['toolbar']['actions']['add-row'] = array(
+  $form['toolbar_designer']['stage']['actions']['add-row'] = array(
     '#type' => 'link',
     '#title' => t('Add new row'),
     '#href' => '#',
@@ -208,7 +208,7 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
       'class' => array('add', 'add-toolbar-row'),
     ),
   );
-  $form['toolbar_designer']['toolbar']['templates'] = array(
+  $form['toolbar_designer']['stage']['templates'] = array(
     '#markup' => '<div class="toolbar-row-template">
   <a href="javascript:;" class="row-handler handler">&nbsp;</a>
   <a href="javascript:;" class="add add-group">&nbsp;</a>
@@ -227,7 +227,7 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
   $form['toolbar_designer']['#attached']['library'][] = array('system', 'ui.sortable');
   $form['toolbar_designer']['#attached']['js'][] = $module_path . '/wysiwyg.admin.js';
   $form['toolbar_designer']['#attached']['css'][] = $module_path . '/wysiwyg.admin.css';
-  $form['toolbar_designer']['_toolbar'] = array(
+  $form['toolbar_designer']['toolbar'] = array(
     '#type' => 'hidden',
     '#attributes' => array('id' => 'edit-toolbar'),
   );
