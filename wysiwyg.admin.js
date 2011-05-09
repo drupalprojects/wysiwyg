@@ -52,22 +52,19 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
         addClasses: false,
         stop: function(event,ui) {
           changeNotification.fadeIn();
+        },
+        beforeStop: function(event, ui) {
+          // ui.item is the clone of an available button dragged to this group.
+          ui.item.removeClass('template-button').addClass('toolbar-button');
+        },
+        receive: function(event, ui) {
+          // ui.sender is posibly the available button which was cloned and
+          // and dragged to this group. Separators can be used multiple times.
+          if (ui.sender.hasClass('template-button') && !ui.sender.hasClass('wysiwyg-button-default-separator')) {
+            ui.sender.hide();
+          }
         }
-      });
 
-      group.droppable({
-        accept: '.template-button',
-        drop: function(event,ui) {
-          var button = ui.draggable.clone();
-          button.removeClass('template-button').addClass('toolbar-button');
-
-          // Disable this button in template area.
-          ui.draggable.hide();
-          separator.show();
-
-          $(this).append(button).sortable('refresh');
-          changeNotification.fadeIn();
-        }
       });
       return group;
     }
@@ -124,6 +121,7 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
     $('.wysiwyg-button',availableButtons).addClass('template-button').draggable({
       handle: '.handler',
       helper: 'clone',
+      connectToSortable: '.toolbar-group',
       revert: 'invalid',
       addClasses: false
     });
