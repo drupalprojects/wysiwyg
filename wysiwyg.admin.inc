@@ -219,6 +219,10 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
 ',
   );
 
+  $form['toolbar_designer']['change_notification'] = array(
+    '#markup' => '<div class="toolbar-changed-warning messages warning"><span class="warning">*</span>' . t('Changes made to this toolbar will not be saved until the form is submitted.') . '</div>', 
+  );
+
   $form['toolbar_designer']['#attached']['js'][] = array(
     'data' => array('wysiwyg_toolbar' => $toolbar_support),
     'type' => 'setting',

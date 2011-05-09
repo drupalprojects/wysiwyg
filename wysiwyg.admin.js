@@ -6,7 +6,7 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
     var settings = settings.wysiwyg_toolbar;
     var workspace = $('#wysiwyg-toolbar-designer');
     var designArea = $('#toolbar-rows');
-    var changeNotification = $('#wysiwyg-toolbar-designer div.warning');
+    var changeNotification = $('#wysiwyg-toolbar-designer div.toolbar-changed-warning');
     var availableButtons = $('#toolbar-available-buttons');
     var separator = $('.wysiwyg-button-default-separator', availableButtons);
 
@@ -27,6 +27,7 @@ Drupal.behaviors.wysiwygToolbarDesigner = {
           var group = createGroup();
           row.append(group);
           row.sortable('refresh');
+          changeNotification.fadeIn();
           return false;
         });
       }
