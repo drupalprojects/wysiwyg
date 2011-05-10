@@ -296,7 +296,10 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
   }
 
   // Convert the config values into the form expected by TinyMCE.
-  $csv_settings = array('plugins', 'extended_valid_elements', 'theme_advanced_buttons1', 'theme_advanced_buttons2', 'theme_advanced_buttons3');
+  $csv_settings = array('plugins', 'extended_valid_elements');
+  for ($i = 0; $i < count($toolbar); $i++) {
+    $csv_settings[] = 'theme_advanced_buttons' . ($i + 1);
+  }
   foreach ($csv_settings as $key) {
     if (isset($settings[$key]) && is_array($settings[$key])) {
       $settings[$key] = implode(',', $settings[$key]);
