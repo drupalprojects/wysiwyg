@@ -410,6 +410,9 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
     foreach (explode('|', trim($raw_row, '|')) as $raw_group) {
       $group = array();
       foreach (explode(',', trim($raw_group, ',')) as $button) {
+        if (strpos($button, '.') === FALSE) {
+          continue;
+        }
         list($plugin, $name) = explode('.', $button, 2);
         $group[] = array(
           'button' => $name,
@@ -624,11 +627,17 @@ function theme_wysiwyg_profile_overview($variables) {
  * Submit callback for Wysiwyg profile overview form.
  */
 function wysiwyg_profile_overview_submit($form, &$form_state) {
+  // The settings handling relies on these to be defined and arrays.
+  $settings = array(
+    'toolbar' => array(),
+    'extensions' => array(),
+  );
   foreach ($form_state['values']['formats'] as $format => $values) {
     db_merge('wysiwyg')
       ->key(array('format' => $format))
       ->fields(array(
         'editor' => $values['editor'],
+        'settings' => serialize($settings),
       ))
       ->execute();
   }
