@@ -22,6 +22,7 @@ function wysiwyg_whizzywig_editor() {
     'version callback' => 'wysiwyg_whizzywig_version',
     'settings callback' => 'wysiwyg_whizzywig_settings',
     'plugin callback' => 'wysiwyg_whizzywig_plugins',
+    'toolbar separator' => TRUE,
     'versions' => array(
       '55' => array(
         'js files' => array('whizzywig.js'),
@@ -93,12 +94,20 @@ function wysiwyg_whizzywig_settings($editor, $config, $theme) {
 
   // Add configured buttons or all available.
   $settings['buttons'] = array();
-  if (!empty($config['buttons'])) {
+  if (!empty($config['toolbar'])) {
+    // Whizzywig supports only one button group/row.
+    $group_config = $config['toolbar'][0][0];
     $buttons = array();
-    foreach ($config['buttons'] as $plugin) {
-      $buttons = array_merge($buttons, $plugin);
+    foreach ($group_config as $button_config) {
+      $button = $button_config['button'];
+      if ($button == 'separator') {
+        $buttons[] = '|';
+      }
+      else {
+        $buttons[] = $button;
+      }
     }
-    $settings['buttons'] = implode(' ', array_keys($buttons));
+    $settings['buttons'] = implode(' ', $buttons);
   }
 
   // Add editor content stylesheet.
