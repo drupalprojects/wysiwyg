@@ -118,27 +118,27 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
     $group_config = $config['toolbar'][0][0];
     $buttoninfo = _wysiwyg_wymeditor_button_info();
     $plugins = wysiwyg_get_plugins($editor['name']);
-        foreach ($group_config as $button_config) {
-          $button = $button_config['button'];
-          $plugin = $button_config['plugin'];
-          // Skip unavailable plugins.
-          if (!isset($plugins[$plugin]['buttons'][$button])) {
-            continue;
-          }
-            // Merge meta-data for internal default buttons.
-            if (isset($buttoninfo[$button])) {
-              $buttoninfo[$button] += array('name' => $button);
-              $settings['toolsItems'][] = $buttoninfo[$button];
-            }
-            // For custom buttons, try to provide a valid button definition.
-            else {
-              $settings['toolsItems'][] = array(
-                'name' => $button,
-                'title' => $plugins[$plugin][$type][$button],
-                'css' => 'wym_tools_' . $button,
-              );
-            }
-        }
+    foreach ($group_config as $button_config) {
+      $button = $button_config['button'];
+      $plugin = $button_config['plugin'];
+      // Skip unavailable plugins.
+      if (!isset($plugins[$plugin]['buttons'][$button])) {
+        continue;
+      }
+      // Merge meta-data for internal default buttons.
+      if (isset($buttoninfo[$button])) {
+        $buttoninfo[$button] += array('name' => $button);
+        $settings['toolsItems'][] = $buttoninfo[$button];
+      }
+      // For custom buttons, try to provide a valid button definition.
+      else {
+        $settings['toolsItems'][] = array(
+          'name' => $button,
+          'title' => $plugins[$plugin][$type][$button],
+          'css' => 'wym_tools_' . $button,
+        );
+      }
+    }
   }
 
   if (!empty($config['block_formats'])) {
