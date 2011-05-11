@@ -113,19 +113,18 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
 
   // Add configured buttons.
   $settings['toolsItems'] = array();
-  if (!empty($config['buttons'])) {
+  if (!empty($config['toolbar'])) {
+    // WYMeditor only supports one group/row of buttons.
+    $group_config = $config['toolbar'][0][0];
     $buttoninfo = _wysiwyg_wymeditor_button_info();
     $plugins = wysiwyg_get_plugins($editor['name']);
-    foreach ($config['buttons'] as $plugin => $buttons) {
-      foreach ($buttons as $button => $enabled) {
-        // Iterate separately over buttons and extensions properties.
-        foreach (array('buttons', 'extensions') as $type) {
+        foreach ($group_config as $button_config) {
+          $button = $button_config['button'];
+          $plugin = $button_config['plugin'];
           // Skip unavailable plugins.
-          if (!isset($plugins[$plugin][$type][$button])) {
+          if (!isset($plugins[$plugin]['buttons'][$button])) {
             continue;
           }
-          // Add buttons.
-          if ($type == 'buttons') {
             // Merge meta-data for internal default buttons.
             if (isset($buttoninfo[$button])) {
               $buttoninfo[$button] += array('name' => $button);
@@ -139,10 +138,7 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
                 'css' => 'wym_tools_' . $button,
               );
             }
-          }
         }
-      }
-    }
   }
 
   if (!empty($config['block_formats'])) {
