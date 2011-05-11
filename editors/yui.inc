@@ -45,6 +45,8 @@ function wysiwyg_yui_editor() {
     'load callback' => 'wysiwyg_yui_load',
     'settings callback' => 'wysiwyg_yui_settings',
     'plugin callback' => 'wysiwyg_yui_plugins',
+    'toolbar groups' => TRUE,
+    'toolbar separator' => TRUE,
     'versions' => array(
       '2.7.0' => array(
         'js files' => array('yui.js'),
@@ -151,10 +153,15 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
       'buttons' => array(),
     ),
   );
-  if (!empty($config['buttons'])) {
+  if (!empty($config['toolbar'])) {
     $buttons = array();
-    foreach ($config['buttons'] as $plugin => $enabled_buttons) {
-      foreach ($enabled_buttons as $button => $enabled) {
+    // YUI Editor can only use one toolbar row.
+    $row = $config['toolbar'][0];
+    foreach ($row as $group_index => $group_config) {
+      $group = array('group' => 'group' . $group_index, 'label' => '', 'buttons' => array());
+      foreach ($group_config as $button_config) {
+        $button = $button_config['button'];
+        $plugin = $button_config['plugin'];
         $extra = array();
         if ($button == 'heading') {
           $extra = array('menu' => array(
@@ -190,12 +197,11 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
             array('text' => 'Verdana'),
           ));
         }
-        $buttons[] = wysiwyg_yui_button_setting($editor, $plugin, $button, $extra);
+        $group['buttons'][] = wysiwyg_yui_button_setting($editor, $plugin, $button, $extra);
       }
+      $buttons[] = $group;
     }
-    // Group buttons in a dummy group.
-    $buttons = array('group' => 'default', 'label' => '', 'buttons' => $buttons);
-    $settings['toolbar']['buttons'] = array($buttons);
+    $settings['toolbar']['buttons'] = $buttons;
   }
 
   if (isset($config['css_setting'])) {
