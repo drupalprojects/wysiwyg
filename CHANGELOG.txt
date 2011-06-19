@@ -1,6 +1,10 @@
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+
+
+Wysiwyg 6.x-2.4, 2011-06-19
+---------------------------
 #524126 by sun: Re-added #wysiwyg property to enforce no editor via code.
 #1153458 by Deciphered: Fixed TinyMCE 'Verify HTML' setting being ignored.
 #1079694 by TwoD: Fixed Whizzywig not restoring textarea styles when detached.
