@@ -1,6 +1,7 @@
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#1078834 by sun: Fixed coding standards errors.
 
 
 Wysiwyg 6.x-2.4, 2011-06-19
