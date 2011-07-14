@@ -272,13 +272,13 @@ function serialize(node) {
         // IE compatibility mode always sets these, despite being defaults.
         continue;
       }
-      if (/^data-wysiwyg-masked-/.test(attName)) {
+      if (/^data-wysiwyg-protected-/.test(attName)) {
         // Ignore these temporary attributes, see below.
         continue;
       }
-      if ((attName == 'name' || attName == 'src' || attName == 'href') && attributes['data-wysiwyg-masked-' + attName]) {
+      if ((attName == 'name' || attName == 'src' || attName == 'href') && attributes['data-wysiwyg-protected-' + attName]) {
         // Browsers often turn relative URLs into absolute in these attributes.
-        attValue = attributes['data-wysiwyg-masked-' + attName].nodeValue || attValue;
+        attValue = attributes['data-wysiwyg-protected-' + attName].nodeValue || attValue;
       }
       if (attName == 'style' && node.style.cssText) {
         // IE uppercases style attributes, values must be kept intact.
@@ -371,7 +371,7 @@ function maskTags(content, tags) {
   // Borrowed from CKEditor to prevent relative URLsi from becoming absolute.
   var protectAttributeRegex = /<((?:a|area|img|input)\b[\s\S]*?\s)((href|src|name)\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|(?:[^ "'>]+)))([^>]*)>/gi;
   replaced = replaced.replace(protectAttributeRegex, function(tag, beginning, fullAttr, attrName, end) {
-    return '<' + beginning + fullAttr + ' data-wysiwyg-masked-' + fullAttr + end + '>';
+    return '<' + beginning + fullAttr + ' data-wysiwyg-protected-' + fullAttr + end + '>';
   });
   // Escape entities since the innerHTML operation in unserialize mangles them.
   replaced = replaced.replace(/\&(\w+|#\d+);/g, "<span data-wysiwyg-protected-entity='1'>$1</span>");
@@ -463,7 +463,7 @@ Drupal.wysiwyg.utilities = {
    *   The callback may modify the DOM nodes in any way needed. If assigning an
    *   element's src or href attribute and it's important for URIs to be
    *   relative, also assign the same value to the corresponding
-   *   data-wysiwyg-masked-[attribute name] attribute. It keeps the browser from
+   *   data-wysiwyg-protected-[attribute name] attribute. It keeps the browser from
    *   making the URI absolute. The same rule applies when reading these
    *   attributes. Instead of element.getAttribute('src'), do
    *   element.getAttribute('data-wysiwyg-protected-src') etc.
