@@ -368,7 +368,7 @@ function unserialize(content) {
 function maskTags(content, tags) {
   var replaced = content.replace(new RegExp('<(' + tags.join('|') + ')', 'gi'), '<div data-masked="$1" ');
   replaced = replaced.replace(new RegExp('<\/(?:' + tags.join('|') + ')>', 'gi'), '</div>');
-  // Borrowed from CKEditor to prevent relative URLsi from becoming absolute.
+  // Borrowed from CKEditor to prevent relative URLs from becoming absolute.
   var protectAttributeRegex = /<((?:a|area|img|input)\b[\s\S]*?\s)((href|src|name)\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|(?:[^ "'>]+)))([^>]*)>/gi;
   replaced = replaced.replace(protectAttributeRegex, function(tag, beginning, fullAttr, attrName, end) {
     return '<' + beginning + fullAttr + ' data-wysiwyg-protected-' + fullAttr + end + '>';
@@ -379,7 +379,7 @@ function maskTags(content, tags) {
 }
 
 /**
- * Unmasks tags previously nasked as divs.
+ * Unmasks tags previously masked as divs.
  *
  * Recursively looks for nodes having a "data-masked" attribute and creates
  * new element nodes of the corresponding type. Other nodes are just cloned.
