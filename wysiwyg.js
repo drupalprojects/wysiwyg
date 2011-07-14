@@ -436,8 +436,10 @@ function unmaskTags(node) {
       unmaskedTag.appendChild(clonedChild);
     }
   }
-  // Merge text nodes.
-  unmaskedTag.normalize();
+  if (unmaskedTag.normalize) {
+    // Merge text nodes.
+    unmaskedTag.normalize();
+  }
   return unmaskedTag;
 }
 
