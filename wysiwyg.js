@@ -415,7 +415,7 @@ function unmaskTags(node) {
     else if (node.getAttribute('data-wysiwyg-protected-entity')) {
       // Recreate the entity as a text node, will be merged with siblings later.
       // Text nodes can't have children so return right away.
-      return document.createTextNode('&' + node.innerText + ';');
+      return document.createTextNode('&' + (node.textContent || node.innerText) + ';');
     }
     else {
       // The node was not masked, just clone it.
