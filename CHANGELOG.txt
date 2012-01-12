@@ -1,6 +1,7 @@
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#1398560 by markwittens: Fixed TinyMCE removing the longdesc attribute.
 #970452 by smk-ka, sun, TwoD, drzraf: Fixed outdated TinyMCE plugin info.
 #1153458 by Deciphered: Fixed TinyMCE 'Verify HTML' setting being ignored.
 #1079694 by TwoD: Fixed Whizzywig not restoring textarea styles when detached.
