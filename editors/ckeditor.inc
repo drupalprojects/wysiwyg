@@ -27,6 +27,7 @@ function wysiwyg_ckeditor_editor() {
         ),
       ),
     ),
+    'install note callback' => 'wysiwyg_ckeditor_install_note',
     'version callback' => 'wysiwyg_ckeditor_version',
     'themes callback' => 'wysiwyg_ckeditor_themes',
     'settings callback' => 'wysiwyg_ckeditor_settings',
@@ -46,6 +47,13 @@ function wysiwyg_ckeditor_editor() {
     ),
   );
   return $editor;
+}
+
+/**
+ * Return an install note.
+ */
+function wysiwyg_ckeditor_install_note() {
+  return '<p class="warning">' . t('Do NOT download the "CKEditor for Drupal" edition.') . '</p>';
 }
 
 /**
