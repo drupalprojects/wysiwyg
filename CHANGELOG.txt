@@ -1,6 +1,7 @@
 
 Wysiwyg 6.x-2.x, xxxx-xx-xx
 ---------------------------
+#1064600 by TwoD: Fixed maximized editors hidden under Drupal's toolbar.
 #1405786 by logaritmisk: Fixed CKEditor being wider than parent elements.
 #1531896 by Chi: Fixed strict warning for WYMeditor.
 #1442226 by robertom: Fixed inverted list button names for WYMeditor.
