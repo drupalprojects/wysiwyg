@@ -1,6 +1,7 @@
 
 Wysiwyg 5.x-2.x, xxxx-xx-xx
 ---------------------------
+#682160 by n_vashenko, TwoD: Fixed lists plugin support for TinyMCE.
 #1064600 by TwoD: Fixed maximized editors hidden under Drupal's toolbar.
 #1405786 by logaritmisk: Fixed CKEditor being wider than parent elements.
 #1531896 by Chi: Fixed strict warning for WYMeditor.
