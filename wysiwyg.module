@@ -745,6 +745,7 @@ function wysiwyg_get_all_editors() {
       'libraries' => array(),
       'version callback' => NULL,
       'themes callback' => NULL,
+      'settings form callback' => NULL,
       'settings callback' => NULL,
       'plugin callback' => NULL,
       'plugin settings callback' => NULL,
