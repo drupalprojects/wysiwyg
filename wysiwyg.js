@@ -71,7 +71,7 @@ Drupal.behaviors.attachWysiwyg = function(context) {
       if (event.originalEvent.returnValue === false) {
         return;
       }
-      Drupal.wysiwygDetach(context, params);
+      Drupal.wysiwygDetach(context, params, 'serialize');
     });
   });
 };
@@ -130,11 +130,16 @@ Drupal.wysiwygAttach = function(context, params) {
  *   A DOM element, supplied by Drupal.attachBehaviors().
  * @param params
  *   An object containing input format parameters.
+ * @param trigger
+ *   A string describing what is causing the editor to be detached.
+ *
+ * @see Drupal.detachBehaviors
  */
-Drupal.wysiwygDetach = function(context, params) {
+Drupal.wysiwygDetach = function (context, params, trigger) {
+  trigger = trigger || 'unload';
   var editor = Drupal.wysiwyg.instances[params.field].editor;
   if (jQuery.isFunction(Drupal.wysiwyg.editor.detach[editor])) {
-    Drupal.wysiwyg.editor.detach[editor](context, params);
+    Drupal.wysiwyg.editor.detach[editor](context, params, trigger);
   }
 };
 

@@ -16,18 +16,19 @@ Drupal.wysiwyg.editor.attach.yui = function(context, params, settings) {
  *
  * See Drupal.wysiwyg.editor.detach.none() for a full desciption of this hook.
  */
-Drupal.wysiwyg.editor.detach.yui = function(context, params) {
+Drupal.wysiwyg.editor.detach.yui = function (context, params, trigger) {
+  var method = (trigger && trigger == 'serialize') ? 'saveHTML' : 'destroy';
   if (typeof params != 'undefined') {
     var instance = YAHOO.widget.EditorInfo.getEditorById(params.field);
     if (instance) {
-      instance.destroy();
+      instance[method]();
     }
   }
   else {
     for (var e in YAHOO.widget.EditorInfo._instances) {
       // Save contents of all editors back into textareas.
       var instance = YAHOO.widget.EditorInfo._instances[e];
-      instance.destroy();
+      instance[method]();
     }
   }
 };

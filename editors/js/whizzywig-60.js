@@ -35,12 +35,16 @@ Drupal.wysiwyg.editor.attach.whizzywig = function(context, params, settings) {
 /**
  * Detach a single or all editors.
  */
-Drupal.wysiwyg.editor.detach.whizzywig = function(context, params) {
+Drupal.wysiwyg.editor.detach.whizzywig = function (context, params, trigger) {
   var detach = function (index) {
     var id = whizzies[index], $field = $('#' + id), instance = Drupal.wysiwyg.instances[id];
 
     // Save contents of editor back into textarea.
     $field.val(instance.getContent());
+    // If the editor is just being serialized (not detached), our work is done.
+    if (trigger == 'serialize') {
+      return;
+    }
     // Move original textarea back to its previous location.
     var $container = $('#CONTAINER' + id);
     $field.insertBefore($container);

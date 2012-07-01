@@ -103,20 +103,24 @@ Drupal.wysiwyg.editor.attach.tinymce = function(context, params, settings) {
  *
  * See Drupal.wysiwyg.editor.detach.none() for a full desciption of this hook.
  */
-Drupal.wysiwyg.editor.detach.tinymce = function(context, params) {
+Drupal.wysiwyg.editor.detach.tinymce = function (context, params, trigger) {
   if (typeof params != 'undefined') {
     var instance = tinyMCE.get(params.field);
     if (instance) {
       instance.save();
-      instance.remove();
+      if (trigger != 'serialize') {
+        instance.remove();
+      }
     }
   }
   else {
     // Save contents of all editors back into textareas.
     tinyMCE.triggerSave();
-    // Remove all editor instances.
-    for (var instance in tinyMCE.editors) {
-      tinyMCE.editors[instance].remove();
+    if (trigger != 'serialize') {
+      // Remove all editor instances.
+      for (var instance in tinyMCE.editors) {
+        tinyMCE.editors[instance].remove();
+      }
     }
   }
 };

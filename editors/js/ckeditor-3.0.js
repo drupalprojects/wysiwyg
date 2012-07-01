@@ -158,16 +158,19 @@ Drupal.wysiwyg.editor.attach.ckeditor = function(context, params, settings) {
  *   containing all instances or the passed in params.field instance, but
  *   always return an array to simplify all detach functions.
  */
-Drupal.wysiwyg.editor.detach.ckeditor = function(context, params) {
+Drupal.wysiwyg.editor.detach.ckeditor = function (context, params, trigger) {
+  var method = (trigger == 'serialize') ? 'updateElement' : 'destroy';
   if (typeof params != 'undefined') {
     var instance = CKEDITOR.instances[params.field];
     if (instance) {
-      instance.destroy();
+      instance[method]();
     }
   }
   else {
     for (var instanceName in CKEDITOR.instances) {
-      CKEDITOR.instances[instanceName].destroy();
+      if (CKEDITOR.instances.hasOwnProperty(instanceName)) {
+        CKEDITOR.instances[instanceName][method]();
+      }
     }
   }
 };

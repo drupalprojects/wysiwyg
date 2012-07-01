@@ -17,7 +17,10 @@ Drupal.wysiwyg.editor.attach.markitup = function(context, params, settings) {
 /**
  * Detach a single or all editors.
  */
-Drupal.wysiwyg.editor.detach.markitup = function(context, params) {
+Drupal.wysiwyg.editor.detach.markitup = function (context, params, trigger) {
+  if (trigger == 'serialize') {
+    return;
+  }
   if (typeof params != 'undefined') {
     $('#' + params.field, context).markItUpRemove();
   }

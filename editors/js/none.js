@@ -26,6 +26,9 @@ Drupal.wysiwyg.editor.attach.none = function(context, params, settings) {
 /**
  * Detach a single or all editors.
  *
+ * The editor syncs its contents back to the original field before its instance
+ * is removed.
+ *
  * @param context
  *   A DOM element, supplied by Drupal.attachBehaviors().
  * @param params
@@ -33,9 +36,18 @@ Drupal.wysiwyg.editor.attach.none = function(context, params, settings) {
  *   only the editor instance in params.field should be detached. Otherwise,
  *   all editors should be detached and saved, so they can be submitted in
  *   AJAX/AHAH applications.
+ * @param trigger
+ *   A string describing why the editor is being detached.
+ *   Possible triggers are:
+ *   - unload: (default) Another or no editor is about to take its place.
+ *   - move: Currently expected to produce the same result as unload.
+ *   - serialize: The form is about to be serialized before an AJAX request or
+ *     a normal form submission. If possible, perform a quick detach and leave
+ *     the editor's GUI elements in place to avoid flashes or scrolling issues.
+ * @see Drupal.detachBehaviors
  */
-Drupal.wysiwyg.editor.detach.none = function(context, params) {
-  if (typeof params != 'undefined') {
+Drupal.wysiwyg.editor.detach.none = function (context, params, trigger) {
+  if (typeof params != 'undefined' && (trigger != 'serialize')) {
     var $textarea = $('#' + params.field, context).removeClass('textarea-processed');
     var $div = $textarea.parents('div.resizable-textarea');
     $div.before($textarea);
