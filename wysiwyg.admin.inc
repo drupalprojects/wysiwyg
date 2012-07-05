@@ -301,7 +301,7 @@ function wysiwyg_profile_form($form_state, $profile) {
 
   // Allow editor library specific changes to be made to the form.
   if (isset($editor['settings form callback'])) {
-    $editor['settings form callback']($form, $form_state);
+    $editor['settings form callback']($form, $form_state, $profile, $editor, $plugins);
   }
 
   return $form;
