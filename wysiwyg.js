@@ -181,6 +181,7 @@ Drupal.wysiwyg.toggleWysiwyg = function (event) {
     Drupal.wysiwyg.editor.attach.none(context, params);
     Drupal.wysiwyg.instances[params.field] = Drupal.wysiwyg.editor.instance.none;
     Drupal.wysiwyg.instances[params.field].editor = 'none';
+    Drupal.wysiwyg.instances[params.field].field = params.field;
     $(this).html(Drupal.settings.wysiwyg.enable).blur();
   }
   else {

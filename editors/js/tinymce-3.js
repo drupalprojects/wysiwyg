@@ -194,7 +194,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
   },
 
   openDialog: function(dialog, params) {
-    var instanceId = this.isFullscreen() ? 'mce_fullscreen' : this.field;
+    var instanceId = this.getInstanceId();
     var editor = tinyMCE.get(instanceId);
     editor.windowManager.open({
       file: dialog.url + '/' + instanceId,
@@ -205,8 +205,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
   },
 
   closeDialog: function(dialog) {
-    var instanceId = this.isFullscreen() ? 'mce_fullscreen' : this.field;
-    var editor = tinyMCE.get(instanceId);
+    var editor = tinyMCE.get(this.getInstanceId());
     editor.windowManager.close(dialog);
   },
 
@@ -241,13 +240,25 @@ Drupal.wysiwyg.editor.instance.tinymce = {
 
   insert: function(content) {
     content = this.prepareContent(content);
-    var instanceId = this.isFullscreen() ? 'mce_fullscreen' : this.field;
-    tinyMCE.execInstanceCommand(instanceId, 'mceInsertContent', false, content);
+    tinyMCE.execInstanceCommand(this.getInstanceId(), 'mceInsertContent', false, content);
+  },
+
+  setContent: function (content) {
+    content = this.prepareContent(content);
+    tinyMCE.execInstanceCommand(this.getInstanceId(), 'mceSetContent', false, content);
+  },
+
+  getContent: function () {
+    return tinyMCE.get(this.getInstanceId()).getContent();
   },
 
   isFullscreen: function() {
     // TinyMCE creates a completely new instance for fullscreen mode.
     return tinyMCE.activeEditor.id == 'mce_fullscreen' && tinyMCE.activeEditor.getParam('fullscreen_editor_id') == this.field;
+  },
+
+  getInstanceId: function () {
+    return this.isFullscreen() ? 'mce_fullscreen' : this.field;
   }
 };
 

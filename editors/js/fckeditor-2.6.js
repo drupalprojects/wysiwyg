@@ -175,6 +175,16 @@ Drupal.wysiwyg.editor.instance.fckeditor = {
     var instance = FCKeditorAPI.GetInstance(this.field);
     // @see FCK.InsertHtml(), FCK.InsertElement()
     instance.InsertHtml(content);
+  },
+
+  getContent: function () {
+    var instance = FCKeditorAPI.GetInstance(this.field);
+    return instance.GetData();
+  },
+
+  setContent: function (content) {
+    var instance = FCKeditorAPI.GetInstance(this.field);
+    instance.SetHTML(content);
   }
 };
 

@@ -66,6 +66,14 @@ Drupal.wysiwyg.editor.instance.none = {
     else {
       editor.value += content;
     }
+  },
+
+  setContent: function (content) {
+    $('#' + this.field).val(content);
+  },
+
+  getContent: function () {
+    return $('#' + this.field).val();
   }
 };
 

@@ -227,9 +227,18 @@ Drupal.wysiwyg.editor.instance.ckeditor = {
     // @todo Don't know if we need this yet.
     return content;
   },
+
   insert: function(content) {
     content = this.prepareContent(content);
     CKEDITOR.instances[this.field].insertHtml(content);
+  },
+
+  setContent: function (content) {
+    CKEDITOR.instances[this.field].setData(content);
+  },
+
+  getContent: function () {
+    return CKEDITOR.instances[this.field].getData();
   }
 };
 
