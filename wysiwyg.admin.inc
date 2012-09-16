@@ -499,7 +499,7 @@ function theme_wysiwyg_profile_overview($form) {
 function wysiwyg_profile_overview_submit($form_id, &$form_values) {
   foreach ($form_values['formats'] as $format => $values) {
     db_query("UPDATE {wysiwyg} SET editor = '%s' WHERE format = %d", $values['editor'], $format);
-    if (!db_affected_rows()) {
+    if (!db_affected_rows() && !empty($values['editor'])) {
       db_query("INSERT INTO {wysiwyg} (format, editor) VALUES (%d, '%s')", $format, $values['editor']);
     }
   }
