@@ -234,4 +234,14 @@ Drupal.wysiwyg.getParams = function(element, params) {
  */
 Drupal.wysiwygInit();
 
+// Respond to CTools detach behaviors event.
+$(document).bind('CToolsDetachBehaviors', function(event, context) {
+  $('.wysiwyg', context).removeClass('wysiwyg').each(function () {
+    if (this.checked) {
+      var params = Drupal.wysiwyg.getParams(this);
+      Drupal.wysiwygDetach(context, params, 'unload');
+    }
+  });
+});
+
 })(jQuery);
