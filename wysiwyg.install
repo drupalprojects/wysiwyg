@@ -30,6 +30,7 @@ function wysiwyg_schema() {
         'description' => 'Configuration settings for the editor.',
         'type' => 'text',
         'size' => 'normal',
+        'serialize' => TRUE,
       ),
     ),
     'primary key' => array('format'),
@@ -308,5 +309,34 @@ function wysiwyg_update_7200() {
       'length' => 255,
       'not null' => FALSE,
     ));
+  }
+}
+
+/**
+ * Update enabled font plugin buttons to default plugin in TinyMCE profiles.
+ */
+function wysiwyg_update_7201() {
+  $query = db_select('wysiwyg', 'w')
+    ->fields('w', array('format', 'settings'))
+    ->condition('editor', 'tinymce');
+  foreach ($query->execute() as $profile) {
+    $settings = unserialize($profile->settings);
+    // Move enabled 'font' buttons into 'default' plugin buttons.
+    $changed = FALSE;
+    foreach (array('formatselect', 'fontselect', 'fontsizeselect', 'styleselect') as $button) {
+      if (isset($settings['buttons']['font'][$button])) {
+        $settings['buttons']['default'][$button] = $settings['buttons']['font'][$button];
+        unset($settings['buttons']['font'][$button]);
+        $changed = TRUE;
+      }
+    }
+    if ($changed) {
+      db_update('wysiwyg')
+        ->condition('format', $profile->format)
+        ->fields(array(
+          'settings' => serialize($settings),
+        ))
+        ->execute();
+    }
   }
 }
