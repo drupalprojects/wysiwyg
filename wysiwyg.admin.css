@@ -1,6 +1,9 @@
 #toolbar-rows {
   margin: 1em 0;
 }
+#toolbar-rows div, #toolbar-rows span {
+  vertical-align: top;
+}
 #toolbar-rows .toolbar-row {
   border: 1px solid gray;
   padding: 0.2em 0.2em 0.2em 20px;
