@@ -114,17 +114,19 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
   // Add configured buttons.
   $settings['toolsItems'] = array();
   if (!empty($config['toolbar'])) {
-    // WYMeditor only supports one group/row of buttons.
-    $group_config = $config['toolbar'][0][0];
     $buttoninfo = _wysiwyg_wymeditor_button_info();
     $plugins = wysiwyg_get_plugins($editor['name']);
-    foreach ($group_config as $button_config) {
-      $button = $button_config['button'];
-      $plugin = $button_config['plugin'];
-      // Skip unavailable plugins.
-      if (!isset($plugins[$plugin]['buttons'][$button])) {
+    // Allow looking up which button is provided by which plugin.
+    $plugin_lookup = array();
+    foreach ($plugins as $plugin => $meta) {
+      if (empty($meta['buttons'])) {
         continue;
       }
+      foreach ($meta['buttons'] as $button_name => $button) {
+        $plugin_lookup[$button_name] = $plugin;
+      }
+    }
+    foreach ($config['toolbar'] as $button) {
       // Merge meta-data for internal default buttons.
       if (isset($buttoninfo[$button])) {
         $buttoninfo[$button] += array('name' => $button);
@@ -132,9 +134,10 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
       }
       // For custom buttons, try to provide a valid button definition.
       else {
+        $plugin = $plugin_lookup[$button];
         $settings['toolsItems'][] = array(
           'name' => $button,
-          'title' => $plugins[$plugin][$type][$button],
+          'title' => $plugins[$plugin]['buttons'][$button],
           'css' => 'wym_tools_' . $button,
         );
       }

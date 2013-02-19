@@ -21,7 +21,7 @@ function wysiwyg_openwysiwyg_editor() {
       ),
     ),
     'toolbar rows' => TRUE,
-    'toolbar separator' => TRUE,
+    'toolbar separator' => 'seperator',
     'version callback' => 'wysiwyg_openwysiwyg_version',
     'themes callback' => 'wysiwyg_openwysiwyg_themes',
     'settings callback' => 'wysiwyg_openwysiwyg_settings',
@@ -112,22 +112,10 @@ function wysiwyg_openwysiwyg_settings($editor, $config, $theme) {
 
   $settings['Toolbar'] = array();
   if (!empty($config['toolbar'])) {
-    $plugins = wysiwyg_get_plugins($editor['name']);
     foreach ($config['toolbar'] as $row) {
       $toolbar_row = array();
-      foreach ($row as $buttons) {
-        foreach ($buttons as $button_config) {
-          // Skip unavailable plugins.
-          $plugin = $button_config['plugin'];
-          $button = $button_config['button'];
-          if ($button == 'separator') {
-            $toolbar_row[] = 'seperator';
-          }
-          elseif (!isset($plugins[$plugin]['buttons'][$button])) {
-            continue;
-          }
-          $toolbar_row[] = $button;
-        }
+      foreach ($row as $button) {
+        $toolbar_row[] = $button;
       }
       $settings['Toolbar'][] = $toolbar_row;
     }
@@ -147,6 +135,7 @@ function wysiwyg_openwysiwyg_settings($editor, $config, $theme) {
 function wysiwyg_openwysiwyg_plugins($editor) {
   $plugins = array(
     'default' => array(
+      'title' => t('openWYSIWYG core'),
       'buttons' => array(
         'bold' => t('Bold'), 'italic' => t('Italic'), 'underline' => t('Underline'),
         'strikethrough' => t('Strike-through'),

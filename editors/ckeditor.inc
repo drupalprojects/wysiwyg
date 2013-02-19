@@ -29,7 +29,7 @@ function wysiwyg_ckeditor_editor() {
     ),
     'toolbar groups' => TRUE,
     'toolbar rows' => TRUE,
-    'toolbar separator' => TRUE,
+    'toolbar separator' => '-',
     'install note callback' => 'wysiwyg_ckeditor_install_note',
     'version callback' => 'wysiwyg_ckeditor_version',
     'themes callback' => 'wysiwyg_ckeditor_themes',
@@ -40,7 +40,8 @@ function wysiwyg_ckeditor_editor() {
     'plugin settings callback' => 'wysiwyg_ckeditor_plugin_settings',
     'proxy plugin' => array(
       'drupal' => array(
-        'load' => TRUE,
+        'title' => t('Drupal proxy plugin'),
+        'load' => FALSE,
         'proxy' => TRUE,
       ),
     ),
@@ -279,47 +280,33 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
   $toolbar = array();
   $extra_plugins = array();
   $plugins = wysiwyg_get_plugins($editor['name']);
-  foreach ($config['extensions'] as $plugin => $buttons) {
-    foreach ($buttons as $button => $enabled) {
-      if (!isset($plugins[$plugin]['extensions'][$button])) {
-        continue;
-      }
-      // Add plain extensions.
-      if (!empty($plugins[$plugin]['load'])) {
-        $extra_plugins[] = $plugin;
-      }
-      // Allow plugins to add or override global configuration settings.
-      if (!empty($plugins[$plugin]['options'])) {
-        $settings = array_merge($settings, $plugins[$plugin]['options']);
-      }
+  foreach ($config['plugins'] as $plugin => $enabled) {
+    if (!$enabled || !isset($plugins[$plugin])) {
+      continue;
+    }
+    // Add plain extensions.
+    if (!empty($plugins[$plugin]['load'])) {
+      $extra_plugins[] = $plugin;
+    }
+    // Allow plugins to add or override global configuration settings.
+    if (!empty($plugins[$plugin]['options'])) {
+      $settings = array_merge($settings, $plugins[$plugin]['options']);
     }
   }
 
-  foreach ($config['toolbar'] as $row) {
-    foreach ($row as $buttons) {
-      $group = array();
-      foreach ($buttons as $button_config) {
-        $plugin = $button_config['plugin'];
-        $button = $button_config['button'];
-        if ($button == 'separator') {
-          $group[] = '-';
-          continue;
-        }
-        if (!isset($plugins[$plugin]['buttons'][$button])) {
-          continue;
-        }
-        $group[] = $button;
-
-        // Add external Drupal plugins to the list of extensions.
-        if (!empty($plugins[$plugin]['proxy']) || empty($plugins[$plugin]['internal']) || !empty($plugins[$plugin]['load'])) {
+  foreach ($config['toolbar'] as $config_row) {
+    foreach ($config_row as $buttons) {
+      $row = array();
+      foreach ($buttons as $button) {
+        // Cross-editor plugin buttons are prefixed by the proxy plugin name.
+        if (strpos($button, '.') !== FALSE) {
+          list($plugin, $button) = explode('.', $button);
+          // @todo Proxy-plugins: remove when allowing multiple buttons.
           $extra_plugins[] = $button;
         }
-        // Allow plugins to add or override global configuration settings.
-        if (!empty($plugins[$plugin]['options'])) {
-          $settings = array_merge($settings, $plugins[$plugin]['options']);
-        }
+        $row[] = $button;
       }
-      $toolbar[] = $group;
+      $toolbar[] = $row;
     }
     $toolbar[] = '/';
   }
@@ -430,6 +417,7 @@ function wysiwyg_ckeditor_proxy_plugin_settings($editor, $profile, $plugins) {
 function wysiwyg_ckeditor_plugins($editor) {
   $plugins = array(
     'default' => array(
+      'title' => t('CKEditor core'),
       'buttons' => array(
         'Bold' => t('Bold'), 'Italic' => t('Italic'), 'Underline' => t('Underline'),
         'Strike' => t('Strike-through'),

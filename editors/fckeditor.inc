@@ -21,7 +21,7 @@ function wysiwyg_fckeditor_editor() {
     ),
     'toolbar groups' => TRUE,
     'toolbar rows' => TRUE,
-    'toolbar separator' => TRUE,
+    'toolbar separator' => '-',
     'version callback' => 'wysiwyg_fckeditor_version',
     'themes callback' => 'wysiwyg_fckeditor_themes',
     'settings callback' => 'wysiwyg_fckeditor_settings',
@@ -29,7 +29,8 @@ function wysiwyg_fckeditor_editor() {
     'plugin settings callback' => 'wysiwyg_fckeditor_plugin_settings',
     'proxy plugin' => array(
       'drupal' => array(
-        'load' => TRUE,
+        'title' => t('Drupal proxy plugin'),
+        'load' => FALSE,
         'proxy' => TRUE,
       ),
     ),
@@ -143,36 +144,25 @@ function wysiwyg_fckeditor_settings($editor, $config, $theme) {
   $settings['ToolbarSet'] = 'Wysiwyg';
   $toolbar = array();
   $plugins = wysiwyg_get_plugins($editor['name']);
-  foreach ($config['extensions'] as $plugin => $buttons) {
-    foreach ($buttons as $button => $enabled) {
-      if (!isset($plugins[$plugin]['extensions'][$button])) {
-        continue;
-      }
-      // Allow plugins to add or override global configuration settings.
-      if (!empty($plugins[$plugin]['options'])) {
-        $settings = array_merge($settings, $plugins[$plugin]['options']);
-      }
+  foreach ($config['plugins'] as $plugin => $enabled) {
+    if (!$enabled || !isset($plugins[$plugin])) {
+      continue;
+    }
+    // Allow plugins to add or override global configuration settings.
+    if (!empty($plugins[$plugin]['options'])) {
+      $settings = array_merge($settings, $plugins[$plugin]['options']);
     }
   }
 
   foreach ($config['toolbar'] as $row) {
     foreach ($row as $buttons) {
       $group = array();
-      foreach ($buttons as $button_config) {
-        $plugin = $button_config['plugin'];
-        $button = $button_config['button'];
-        if ($button == 'separator') {
-          $group[] = '-';
-          continue;
+      foreach ($buttons as $button_name) {
+        // Cross-editor plugin buttons are prefixed with the proxy plugin name.
+        if (strpos($button_name, '.') !== FALSE) {
+          list($plugin, $button_name) = explode('.', $button_name);
         }
-        if (!isset($plugins[$plugin]['buttons'][$button])) {
-          continue;
-        }
-        $group[] = $button;
-        // Allow plugins to add or override global configuration settings.
-        if (!empty($plugins[$plugin]['options'])) {
-          $settings = array_merge($settings, $plugins[$plugin]['options']);
-        }
+        $group[] = $button_name;
       }
       $toolbar[] = $group;
     }
@@ -232,6 +222,7 @@ function wysiwyg_fckeditor_proxy_plugin_settings($editor, $profile, $plugins) {
 function wysiwyg_fckeditor_plugins($editor) {
   $plugins = array(
     'default' => array(
+      'title' => t('FCKeditor core'),
       'buttons' => array(
         'Bold' => t('Bold'), 'Italic' => t('Italic'), 'Underline' => t('Underline'),
         'StrikeThrough' => t('Strike-through'),

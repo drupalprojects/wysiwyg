@@ -67,15 +67,7 @@ function wysiwyg_nicedit_settings($editor, $config, $theme) {
   // Add configured buttons or all available.
   $settings['buttonList'] = array();
   if (!empty($config['toolbar'])) {
-    $buttons = array();
-    foreach ($config['toolbar'] as $row) {
-      foreach ($row as $group) {
-        foreach ($group as $button) {
-          $buttons[] = $button['button'];
-        }
-      }
-    }
-    $settings['buttonList'] = $buttons;
+    $settings['buttonList'] = $config['toolbar'];
   }
 
   // Add editor content stylesheet.
@@ -100,6 +92,7 @@ function wysiwyg_nicedit_settings($editor, $config, $theme) {
 function wysiwyg_nicedit_plugins($editor) {
   return array(
     'default' => array(
+      'title' => t('NicEdit core'),
       'buttons' => array(
         'bold' => t('Bold'), 'italic' => t('Italic'), 'underline' => t('Underline'),
         'strikethrough' => t('Strike-through'),

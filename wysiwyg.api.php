@@ -41,6 +41,10 @@ function hook_wysiwyg_plugin($editor, $version) {
       if ($version > 3) {
         return array(
           'myplugin' => array(
+            // The plugin's title; defaulting to its internal name ('myplugin'),
+            // or the value of the first item in the 'extensions' key, if it
+            // exists..
+            'title' => t('My plugin'),
             // A URL to the plugin's homepage.
             'url' => 'http://drupal.org/project/img_assist',
             // The full path to the native editor plugin, no trailing slash.
@@ -79,6 +83,10 @@ function hook_wysiwyg_plugin($editor, $version) {
             // other modules. TRUE means 'path' and 'filename' above are ignored
             // and the plugin is instead loaded from the editor's plugin folder.
             'internal' => TRUE,
+            // A lost of internal names of other native plugins this plugin
+            // depends on to function. These plugins will also be automatically
+            // enabled if this plugin or one of its buttons are enabled.
+            'dependencies' => array('dialog'),
             // TinyMCE-specific: Additional HTML elements to allow in the markup.
             'extended_valid_elements' => array(
               'img[class|src|border=0|alt|title|width|height|align|name|style]',

@@ -156,12 +156,8 @@ function wysiwyg_markitup_settings($editor, $config, $theme) {
   );
   $settings['markupSet'] = array();
   if (!empty($config['toolbar'])) {
-    foreach ($config['toolbar'] as $row) {
-      foreach ($row as $group) {
-        foreach ($group as $button) {
-          $settings['markupSet'][$button['button']] = $default_buttons[$button['button']];
-        }
-      }
+    foreach ($config['toolbar'] as $button) {
+      $settings['markupSet'][$button] = $default_buttons[$button];
     }
   }
 
@@ -174,6 +170,7 @@ function wysiwyg_markitup_settings($editor, $config, $theme) {
 function wysiwyg_markitup_plugins($editor) {
   return array(
     'default' => array(
+      'title' => t('markItUp core'),
       'buttons' => array(
         'bold' => t('Bold'), 'italic' => t('Italic'),
         'stroke' => t('Strike-through'),

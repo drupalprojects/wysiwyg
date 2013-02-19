@@ -27,7 +27,7 @@ function wysiwyg_tinymce_editor() {
       ),
     ),
     'toolbar rows' => TRUE,
-    'toolbar separator' => TRUE,
+    'toolbar separator' => '|',
     'version callback' => 'wysiwyg_tinymce_version',
     'themes callback' => 'wysiwyg_tinymce_themes',
     'init callback' => 'wysiwyg_tinymce_init',
@@ -36,7 +36,8 @@ function wysiwyg_tinymce_editor() {
     'plugin settings callback' => 'wysiwyg_tinymce_plugin_settings',
     'proxy plugin' => array(
       'drupal' => array(
-        'load' => TRUE,
+        'title' => t('Drupal proxy plugin'),
+        'load' => FALSE,
         'proxy' => TRUE,
       ),
     ),
@@ -237,63 +238,40 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
   $settings['extended_valid_elements'] = array();
 
   $plugins = wysiwyg_get_plugins($editor['name']);
-  foreach ($config['extensions'] as $plugin => $buttons) {
-    foreach ($buttons as $button => $enabled) {
-      if (!isset($plugins[$plugin], $plugins[$plugin]['extensions'], $plugins[$plugin]['extensions'][$button])) {
-        continue;
-      }
-      // Add plain extensions.
-      if (!empty($plugins[$plugin]['load'])) {
+  foreach ($config['plugins'] as $plugin => $enabled) {
+    if (!$enabled || !isset($plugins[$plugin])) {
+      continue;
+    }
+    // Add plain extensions.
+    if (!empty($plugins[$plugin]['load'])) {
+      if (!empty($plugins[$plugin]['internal'])) {
         $extensions[$plugin] = 1;
       }
-      // Allow plugins to add valid HTML elements.
-      if (!empty($plugins[$plugin]['extended_valid_elements'])) {
-        $settings['extended_valid_elements'] = array_merge($settings['extended_valid_elements'], $plugins[$plugin]['extended_valid_elements']);
+      else {
+        $extensions[_wysiwyg_tinymce_plugin_name('add', $plugin)] = 1;
       }
-      // Allow plugins to add or override global configuration settings.
-      if (!empty($plugins[$plugin]['options'])) {
-        $settings = array_merge($settings, $plugins[$plugin]['options']);
-      }
+    }
+    // Allow plugins to add valid HTML elements.
+    if (!empty($plugins[$plugin]['extended_valid_elements'])) {
+      $settings['extended_valid_elements'] = array_merge($settings['extended_valid_elements'], $plugins[$plugin]['extended_valid_elements']);
+    }
+    // Allow plugins to add or override global configuration settings.
+    if (!empty($plugins[$plugin]['options'])) {
+      $settings = array_merge($settings, $plugins[$plugin]['options']);
     }
   }
 
-  foreach ($config['toolbar'] as $row) {
-    $group = array();
-    foreach ($row as $buttons) {
-      foreach ($buttons as $button_config) {
-        $plugin = $button_config['plugin'];
-        $button = $button_config['button'];
-        if ($button == 'separator') {
-          $group[] = '|';
-          continue;
-        }
-        if (!isset($plugins[$plugin]['buttons'][$button])) {
-          continue;
-        }
-        $group[] = $button;
-        // Add external Drupal plugins to the list of extensions.
-        if (!empty($plugins[$plugin]['proxy'])) {
-          $extensions[_wysiwyg_tinymce_plugin_name('add', $button)] = 1;
-        }
-        // Add external plugins to the list of extensions.
-        elseif (empty($plugins[$plugin]['internal'])) {
-          $extensions[_wysiwyg_tinymce_plugin_name('add', $plugin)] = 1;
-        }
-        // Add internal buttons that also need to be loaded as extension.
-        elseif (!empty($plugins[$plugin]['load'])) {
-          $extensions[$plugin] = 1;
-        }
-        // Allow plugins to add or override global configuration settings.
-        if (!empty($plugins[$plugin]['options'])) {
-          $settings = array_merge($settings, $plugins[$plugin]['options']);
-        }
-        // Allow plugins to add valid HTML elements.
-        if (!empty($plugins[$plugin]['extended_valid_elements'])) {
-          $settings['extended_valid_elements'] = array_merge($settings['extended_valid_elements'], $plugins[$plugin]['extended_valid_elements']);
-        }
+  foreach ($config['toolbar'] as $config_row) {
+    $row = array();
+    foreach ($config_row as $button) {
+      // Cross-editor plugin buttons are prefixed by the proxy plugin name.
+      if (strpos($button, '.') !== FALSE) {
+        list($plugin, $button) = explode('.', $button);
+        $extensions['-' . $button ] = 1;
       }
+      $row[] = $button;
     }
-    $toolbar[] = $group;
+    $toolbar[] = $row;
   }
   $settings['extended_valid_elements'] = array_unique($settings['extended_valid_elements']);
   if ($extensions) {
@@ -318,14 +296,12 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
         // These rows explicitly need to be set to be empty, otherwise TinyMCE
         // loads its default buttons of the advanced theme for each row.
         $settings += array(
-          'theme_advanced_buttons1' => array(),
-          'theme_advanced_buttons2' => array(),
-          'theme_advanced_buttons3' => array(),
+          'theme_advanced_buttons1' => '',
+          'theme_advanced_buttons2' => '',
+          'theme_advanced_buttons3' => '',
         );
         for ($i = 0; $i < count($toolbar); $i++) {
-          foreach ($toolbar[$i] as $button) {
-            $settings['theme_advanced_buttons' . ($i + 1)][] = $button;
-          }
+          $settings['theme_advanced_buttons' . ($i + 1)] = $toolbar[$i];
         }
       }
       break;
@@ -416,6 +392,7 @@ function _wysiwyg_tinymce_plugin_name($op, $name) {
 function wysiwyg_tinymce_plugins($editor) {
   $plugins = array(
     'default' => array(
+      'title' => t('TinyMCE core'),
       'path' => $editor['library path'] . '/themes/advanced',
       'buttons' => array(
         'bold' => t('Bold'), 'italic' => t('Italic'), 'underline' => t('Underline'),
@@ -433,7 +410,7 @@ function wysiwyg_tinymce_plugins($editor) {
         'sup' => t('Superscript'), 'sub' => t('Subscript'),
         'blockquote' => t('Blockquote'), 'code' => t('Source code'),
         'hr' => t('Horizontal rule'),
-        'cut' => t('Cut'), 'copy' => t('Copy'), 'paste' => t('Paste'),
+        'cut' => t('Cut'), 'copy' => t('Copy'), 'pastetext' => t('Paste text'),
         'visualaid' => t('Visual aid'),
         'removeformat' => t('Remove format'),
         'charmap' => t('Character map'),

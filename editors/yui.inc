@@ -50,6 +50,7 @@ function wysiwyg_yui_editor() {
     'plugin settings callback' => 'wysiwyg_yui_plugin_settings',
     'proxy plugin' => array(
       'drupal' => array(
+        'title' => t('Drupal proxy plugin'),
         'load' => TRUE,
         'proxy' => TRUE,
       ),
@@ -161,15 +162,21 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
       'buttons' => array(),
     ),
   );
+  $plugins = wysiwyg_get_plugins($editor['name']);
+  foreach ($config['plugins'] as $plugin => $enabled) {
+    if (!$enabled || !isset($plugins[$plugin])) {
+      continue;
+    }
+    // Allow plugins to add or override global configuration settings.
+    if (!empty($plugins[$plugin]['options'])) {
+      $settings = array_merge($settings, $plugins[$plugin]['options']);
+    }
+  }
   if (!empty($config['toolbar'])) {
     $buttons = array();
-    // YUI Editor can only use one toolbar row.
-    $row = $config['toolbar'][0];
-    foreach ($row as $group_index => $group_config) {
+    foreach ($config['toolbar'] as $group_index => $group_config) {
       $group = array('group' => 'group' . $group_index, 'label' => '', 'buttons' => array());
-      foreach ($group_config as $button_config) {
-        $button = $button_config['button'];
-        $plugin = $button_config['plugin'];
+      foreach ($group_config as $button) {
         $extra = array();
         if ($button == 'heading') {
           $extra = array('menu' => array(
@@ -205,7 +212,7 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
             array('text' => 'Verdana'),
           ));
         }
-        $group['buttons'][] = wysiwyg_yui_button_setting($editor, $plugin, $button, $extra);
+        $group['buttons'][] = wysiwyg_yui_button_setting($editor, $button, $extra);
       }
       $buttons[] = $group;
     }
@@ -235,24 +242,40 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
  *
  * @param $editor
  *   A processed hook_editor() array of editor properties.
- * @param $plugin
- *   The internal name of a plugin.
  * @param $button
- *   The internal name of a button, defined by $plugin.
+ *   The internal name of a button, defined by a plugin.
  * @param $extra
  *   (optional) An array containing arbitrary other elements to add to the
  *   resulting button.
  */
-function wysiwyg_yui_button_setting($editor, $plugin, $button, $extra = array()) {
+function wysiwyg_yui_button_setting($editor, $button, $extra = array()) {
   static $plugins;
+  static $plugin_lookup;
 
   if (!isset($plugins)) {
     $plugins = wysiwyg_get_plugins($editor['name']);
+    // Allow looking up which button is provided by which plugin.
+    $plugin_lookup = array();
+    foreach ($plugins as $plugin => $meta) {
+      if (empty($meta['buttons'])) {
+        continue;
+      }
+      foreach ($meta['buttons'] as $button_name => $button_info) {
+        $plugin_lookup[$button_name] = $plugin;
+      }
+    }
   }
 
   // Return a simple separator.
   if ($button === 'separator') {
     return array('type' => 'separator');
+  }
+  // Cross-editor plugin buttons are prefixed by the proxy plugin name.
+  if (strpos($button, '.') !== FALSE) {
+    list($plugin, $button) = explode('.', $button);
+  }
+  else {
+    $plugin = $plugin_lookup[$button];
   }
   // Setup defaults.
   $type = 'push';
@@ -323,6 +346,7 @@ function wysiwyg_yui_proxy_plugin_settings($editor, $profile, $plugins) {
 function wysiwyg_yui_plugins($editor) {
   return array(
     'default' => array(
+      'title' => t('YUI Editor core'),
       'buttons' => array(
         'bold' => t('Bold'), 'italic' => t('Italic'), 'underline' => t('Underline'),
         'strikethrough' => t('Strike-through'),
