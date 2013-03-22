@@ -134,6 +134,9 @@ function wysiwyg_ckeditor_themes($editor, $profile) {
  * @see http://docs.cksource.com/ckeditor_api/symbols/CKEDITOR.config.html#.stylesSet
  */
 function wysiwyg_ckeditor_settings_form(&$form, &$form_state) {
+  $form['output']['paste_auto_cleanup_on_paste']['#title'] = t('Force paste as plain text');
+  $form['output']['paste_auto_cleanup_on_paste']['#description'] = t('If enabled, all pasting operations insert plain text into the editor, loosing any formatting information possibly available in the source text. Note: Paste from Word is not affected by this setting.');
+
   if (version_compare($form_state['wysiwyg']['editor']['installed version'], '3.6.0', '>=')) {
     $form['appearance']['default_toolbar_grouping'] = array(
       '#type' => 'checkbox',
@@ -256,6 +259,9 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
   }
   if (isset($config['toolbar_loc'])) {
     $settings['toolbarLocation'] = $config['toolbar_loc'];
+  }
+  if (isset($config['paste_auto_cleanup_on_paste'])) {
+    $settings['forcePasteAsPlainText'] = $config['paste_auto_cleanup_on_paste'];
   }
 
   $settings['toolbar'] = array();
