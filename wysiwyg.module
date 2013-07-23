@@ -17,19 +17,22 @@ function wysiwyg_menu() {
     'access arguments' => array('administer filters'),
     'file' => 'wysiwyg.admin.inc',
   );
-  $items['admin/settings/wysiwyg/profile'] = array(
+  $items['admin/settings/wysiwyg/profile/list'] = array(
     'title' => 'List',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
   );
-  $items['admin/settings/wysiwyg/profile/%wysiwyg_profile/edit'] = array(
-    'title' => 'Edit',
+  $items['admin/settings/wysiwyg/profile/%wysiwyg_profile'] = array(
+    'title callback' => 'wysiwyg_admin_profile_title',
+    'title arguments' => array(4),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('wysiwyg_profile_form', 4),
     'access arguments' => array('administer filters'),
     'file' => 'wysiwyg.admin.inc',
-    'tab_root' => 'admin/settings/wysiwyg/profile',
-    'tab_parent' => 'admin/settings/wysiwyg/profile/%wysiwyg_profile',
-    'type' => MENU_LOCAL_TASK,
+  );
+  $items['admin/settings/wysiwyg/profile/%wysiwyg_profile/edit'] = array(
+    'title' => 'Edit',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['admin/settings/wysiwyg/profile/%wysiwyg_profile/delete'] = array(
     'title' => 'Remove',
@@ -37,8 +40,6 @@ function wysiwyg_menu() {
     'page arguments' => array('wysiwyg_profile_delete_confirm', 4),
     'access arguments' => array('administer filters'),
     'file' => 'wysiwyg.admin.inc',
-    'tab_root' => 'admin/settings/wysiwyg/profile',
-    'tab_parent' => 'admin/settings/wysiwyg/profile/%wysiwyg_profile',
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
@@ -50,6 +51,21 @@ function wysiwyg_menu() {
     'file' => 'wysiwyg.dialog.inc',
   );
   return $items;
+}
+
+/**
+ * Display an editor profile title.
+ *
+ * @param $profile
+ *   An editor profile object.
+ *
+ * @return
+ *   The unfiltered name of an editor profile.
+ *   Currently the same as the input format name.
+ */
+function wysiwyg_admin_profile_title($profile) {
+  $format = filter_format_load($profile->format);
+  return $format->name;
 }
 
 /**
