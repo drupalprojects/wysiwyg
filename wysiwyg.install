@@ -317,3 +317,118 @@ function wysiwyg_update_6202() {
   );
   return $ret;
 }
+
+/**
+ * Update internal names of settings.
+ */
+function wysiwyg_update_6203() {
+  $ret = array();
+  $results = db_query('SELECT format, editor, settings FROM {wysiwyg}');
+  while ($profile = db_fetch_object($results)) {
+    $settings = unserialize($profile->settings);
+    $changed = FALSE;
+    switch ($profile->editor) {
+      case 'tinymce':
+        if (isset($settings['path_loc'])) {
+          $settings['theme_advanced_statusbar_location'] = $settings['path_loc'];
+          unset($settings['path_loc']);
+          $changed = TRUE;
+        }
+        if (isset($settings['toolbar_loc'])) {
+          $settings['theme_advanced_toolbar_location'] = $settings['toolbar_loc'];
+          unset($settings['toolbar_loc']);
+          $changed = TRUE;
+        }
+        if (isset($settings['toolbar_align'])) {
+          $settings['theme_advanced_toolbar_align'] = $settings['toolbar_align'];
+          unset($settings['toolbar_align']);
+          $changed = TRUE;
+        }
+        if (isset($settings['block_formats'])) {
+          $settings['theme_advanced_blockformats'] = $settings['block_formats'];
+          unset($settings['block_formats']);
+          $changed = TRUE;
+        }
+        if (isset($settings['css_classes'])) {
+          $settings['theme_advanced_styles'] = $settings['css_classes'];
+          unset($settings['css_classes']);
+          $changed = TRUE;
+        }
+        if (isset($settings['resizing'])) {
+          $settings['theme_advanced_resizing'] = $settings['resizing'];
+          unset($settings['resizing']);
+          $changed = TRUE;
+        }
+        break;
+      case 'ckeditor':
+        if (isset($settings['apply_source_formatting'])) {
+          $settings['simple_source_formatting'] = $settings['apply_source_formatting'];
+          unset($settings['apply_source_formatting']);
+          $changed = TRUE;
+        }
+        if (isset($settings['resizing'])) {
+          $settings['resize_enabled'] = $settings['resizing'];
+          unset($settings['resizing']);
+          $changed = TRUE;
+        }
+        if (isset($settings['toolbar_loc'])) {
+          $settings['toolbarLocation'] = $settings['toolbar_loc'];
+          unset($settings['toolbar_loc']);
+          $changed = TRUE;
+        }
+        if (isset($settings['paste_auto_cleanup_on_paste'])) {
+          $settings['forcePasteAsPlainText'] = $settings['paste_auto_cleanup_on_paste'];
+          unset($settings['paste_auto_cleanup_on_paste']);
+          $changed = TRUE;
+        }
+        if (isset($settings['css_classes'])) {
+          $settings['stylesSet'] = $settings['css_classes'];
+          unset($settings['css_classes']);
+          $changed = TRUE;
+        }
+        break;
+      case 'fckeditor':
+        if (isset($settings['apply_source_formatting'])) {
+          $settings['FormatSource'] = $settings['FormatOutput'] = $settings['apply_source_formatting'];
+          unset($settings['apply_source_formatting']);
+          $changed = TRUE;
+        }
+        if (isset($settings['paste_auto_cleanup_on_paste'])) {
+          $settings['ForcePasteAsPlainText'] = $settings['paste_auto_cleanup_on_paste'];
+          unset($settings['paste_auto_cleanup_on_paste']);
+          $changed = TRUE;
+        }
+        if (isset($settings['block_formats'])) {
+          $settings['FontFormats'] = strtr($settings['block_formats'], array(',' => ';'));
+          unset($settings['block_formats']);
+          $changed = TRUE;
+        }
+        break;
+      case 'yui':
+        // The resizing setting is triggering autoHeight instead of resize.
+        if (isset($settings['resizing'])) {
+          $settings['autoHeight'] = $settings['resizing'];
+          unset($settings['resizing']);
+          $changed = TRUE;
+        }
+        break;
+      case 'openwysiwyg':
+        if (isset($settings['path_loc'])) {
+          $settings['StatusBarEnabled'] = ($settings['path_loc'] != 'none' );
+          unset($settings['path_loc']);
+          $changed = TRUE;
+        }
+        break;
+      default:
+        // Do not touch any other profiles since the extra settings won't hurt.
+    }
+    if ($changed) {
+      db_query("UPDATE {wysiwyg} SET settings='%s' WHERE format = '%s'", array(serialize($settings), $profile->format));
+    }
+  }
+  $ret[] = array(
+    'success' => TRUE,
+    'query' => 'Editor profiles have been updated.',
+  );
+  return $ret;
+}
