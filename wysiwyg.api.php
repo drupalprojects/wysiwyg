@@ -62,6 +62,12 @@ function hook_wysiwyg_plugin($editor, $version) {
             'options' => array(
               'file_browser_callback' => 'imceImageBrowser',
               'inline_styles' => TRUE,
+              // Function references (callbacks) need special care.
+              // @see wysiwyg_wrap_js_callback()
+              'file_browser_callback' => wysiwyg_wrap_js_callback('myFileBrowserCallback'),
+              // Regular Expressions need special care.
+              // @see wysiwyg_wrap_js_regexp()
+              'stylesheetParser_skipSelectors' => wysiwyg_wrap_js_regexp('(^body\.|^caption\.|\.high|^\.)', 'i'),
             ),
             // Boolean whether the editor needs to load this plugin. When TRUE,
             // the editor will automatically load the plugin based on the 'path'
@@ -156,6 +162,12 @@ function hook_INCLUDE_plugin() {
     'css file' => 'awesome.css',
     // An array of settings for this button. Required, but API is still in flux.
     'settings' => array(
+      // Function references (callbacks) need special care.
+      // @see wysiwyg_wrap_js_callback()
+      'file_browser_callback' => wysiwyg_wrap_js_callback('myFileBrowserCallback'),
+      // Regular Expressions need special care.
+      // @see wysiwyg_wrap_js_regexp()
+      'stylesheetParser_skipSelectors' => wysiwyg_wrap_js_regexp('(^body\.|^caption\.|\.high|^\.)', 'i'),
     ),
     // TinyMCE-specific: Additional HTML elements to allow in the markup.
     'extended_valid_elements' => array(
