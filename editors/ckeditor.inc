@@ -336,7 +336,6 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
     'width' => 'auto',
     // For better compatibility with smaller textareas.
     'resize_minWidth' => 450,
-    'height' => 420,
     // @todo Do not use skins as themes and add separate skin handling.
     'theme' => 'default',
     'skin' => !empty($theme) ? $theme : $default_skin,
