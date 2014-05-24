@@ -15,10 +15,10 @@
  */
 Drupal.wysiwyg.editor.attach.none = function(context, params, settings) {
   if (params.resizable) {
-    $('#' + params.field).addClass('resizable');
-    $('#' + params.field).css({display: ''});
+    $('#' + params.field, context).addClass('resizable');
+    $('#' + params.field, context).css({display: ''});
     if (Drupal.behaviors.textarea) {
-      Drupal.behaviors.textarea();
+      Drupal.behaviors.textarea(context);
     }
   }
 };
@@ -48,7 +48,7 @@ Drupal.wysiwyg.editor.attach.none = function(context, params, settings) {
  */
 Drupal.wysiwyg.editor.detach.none = function (context, params, trigger) {
   if (typeof params != 'undefined' && (trigger != 'serialize')) {
-    var $textarea = $('#' + params.field, context).removeClass('textarea-processed');
+    var $textarea = $('#' + params.field, context).removeClass('textarea-processed').removeClass('resizable');
     var $div = $textarea.parents('div.resizable-textarea');
     $div.before($textarea);
     $div.remove();
