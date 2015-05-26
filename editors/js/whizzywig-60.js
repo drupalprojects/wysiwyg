@@ -94,12 +94,13 @@ Drupal.wysiwyg.editor.instance.whizzywig = {
   },
 
   getContent: function () {
+    var $field = $('#' + this.field);
     // Whizzywig's tidyH() expects a document node. Clone the editing iframe's
     // document so tidyH() won't mess with it if this gets called while editing.
     var clone = $($('#whizzy' + this.field).contents()[0].documentElement).clone()[0].ownerDocument;
     // Whizzywig shows the original textarea in source mode so update the body.
     if ($field.css('display') == 'block') {
-     clone.body.innerHTML = $('#' + this.field).val();
+     clone.body.innerHTML = $field.val();
     }
     return tidyH(clone);
   }
