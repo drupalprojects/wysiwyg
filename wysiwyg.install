@@ -49,7 +49,7 @@ function wysiwyg_schema() {
       'format' => array(
         'description' => 'The {filter_formats}.format of the text format.',
         'type' => 'int',
-        'not null' => FALSE,
+        'not null' => TRUE,
       ),
       'status' => array(
         'description' => 'Boolean indicating whether the format is enabled by default.',
@@ -60,8 +60,8 @@ function wysiwyg_schema() {
         'size' => 'tiny',
       ),
     ),
+    'primary key' => array('uid', 'format'),
     'indexes' => array(
-      'uid' => array('uid'),
       'format' => array('format'),
     ),
     'foreign keys' => array(
@@ -429,6 +429,28 @@ function wysiwyg_update_6203() {
   $ret[] = array(
     'success' => TRUE,
     'query' => 'Editor profiles have been updated.',
+  );
+  return $ret;
+}
+
+/**
+ * Add primary index to {wysiwyg_user}.
+ */
+function wysiwyg_update_6204() {
+  $ret = array();
+  db_drop_index($ret, 'wysiwyg_user', 'uid');
+  db_drop_index($ret, 'wysiwyg_user', 'format');
+  db_change_field($ret, 'wysiwyg_user', 'format', 'format',
+    array(
+      'type' => 'int',
+      'not null' => TRUE,
+    ),
+    array(
+      'primary key' => array('uid', 'format'),
+      'indexes' => array(
+        'uid' => array('uid'),
+      ),
+    )
   );
   return $ret;
 }
