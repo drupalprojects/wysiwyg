@@ -9,8 +9,10 @@
  *
  * @param editorSettings
  *   An object containing editor settings for each input format.
+ * @param pluginInfo
+ *   An object containing global plugin configuration.
  */
-Drupal.wysiwyg.editor.init.tinymce = function(settings) {
+Drupal.wysiwyg.editor.init.tinymce = function(settings, pluginInfo) {
   // @see #454992: drupal_get_js() must not use 'q' as query string.
   if (tinymce.query == 'q') {
     tinymce.query = '';
@@ -26,21 +28,20 @@ Drupal.wysiwyg.editor.init.tinymce = function(settings) {
     if (ed.id == 'mce_fullscreen') {
       $drupalToolbars.show();
     }
+    else {
+      // Free our reference to the private instance to not risk memory leaks.
+      delete ed._drupalWysiwygInstance;
+    }
   });
 
-  // Initialize editor configurations.
-  for (var format in settings) {
-    if (Drupal.settings.wysiwyg.plugins[format]) {
-      // Load native external plugins.
-      // Array syntax required; 'native' is a predefined token in JavaScript.
-      for (var plugin in Drupal.settings.wysiwyg.plugins[format]['native']) {
-        tinymce.PluginManager.load(plugin, Drupal.settings.wysiwyg.plugins[format]['native'][plugin]);
-      }
-      // Load Drupal plugins.
-      for (var plugin in Drupal.settings.wysiwyg.plugins[format].drupal) {
-        Drupal.wysiwyg.editor.instance.tinymce.addPlugin(plugin, Drupal.settings.wysiwyg.plugins[format].drupal[plugin], Drupal.settings.wysiwyg.plugins.drupal[plugin]);
-      }
-    }
+  // Load native external plugins.
+  // Array syntax required; 'native' is a predefined token in JavaScript.
+  for (var plugin in pluginInfo['native']) {
+    tinymce.PluginManager.load(plugin, pluginInfo['native'][plugin]);
+  }
+  // Load Drupal plugins.
+  for (var plugin in pluginInfo.drupal) {
+    Drupal.wysiwyg.editor.instance.tinymce.addPlugin(plugin, pluginInfo.drupal[plugin]);
   }
 };
 
@@ -52,6 +53,7 @@ Drupal.wysiwyg.editor.init.tinymce = function(settings) {
 Drupal.wysiwyg.editor.attach.tinymce = function(context, params, settings) {
   // Configure editor settings for this input format.
   var ed = new tinymce.Editor(params.field, settings);
+  ed._drupalWysiwygInstance = this;
   // Reset active instance id on any event.
   ed.onEvent.add(function(ed, e) {
     Drupal.wysiwyg.activeId = ed.id;
@@ -117,7 +119,7 @@ Drupal.wysiwyg.editor.detach.tinymce = function (context, params, trigger) {
 };
 
 Drupal.wysiwyg.editor.instance.tinymce = {
-  addPlugin: function(plugin, settings, pluginSettings) {
+  addPlugin: function(plugin, pluginSettings) {
     if (typeof Drupal.wysiwyg.plugins[plugin] != 'object') {
       return;
     }
@@ -143,15 +145,15 @@ Drupal.wysiwyg.editor.instance.tinymce = {
 
         // Register the plugin button.
         ed.addButton(plugin, {
-          title : settings.iconTitle,
+          title : pluginSettings.title,
           cmd : plugin,
-          image : settings.icon
+          image : pluginSettings.icon
         });
 
         // Load custom CSS for editor contents on startup.
         ed.onInit.add(function() {
-          if (settings.css) {
-            ed.dom.loadCSS(settings.css);
+          if (pluginSettings.css) {
+            ed.dom.loadCSS(pluginSettings.css);
           }
         });
 
@@ -160,7 +162,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
           var editorId = (ed.id == 'mce_fullscreen' ? ed.getParam('fullscreen_editor_id') : ed.id);
           if (typeof Drupal.wysiwyg.plugins[plugin].attach == 'function') {
             data.content = Drupal.wysiwyg.plugins[plugin].attach(data.content, pluginSettings, editorId);
-            data.content = Drupal.wysiwyg.editor.instance.tinymce.prepareContent(data.content);
+            data.content = ed._drupalWysiwygInstance.prepareContent(data.content);
           }
         });
 
@@ -186,7 +188,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
        */
       getInfo: function() {
         return {
-          longname: settings.title
+          longname: pluginSettings.title
         };
       }
     });

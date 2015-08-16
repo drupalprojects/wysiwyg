@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Integrate client-side editors with Drupal.
+ * Integrates client-side editors with Drupal.
  */
 
 /**
@@ -132,6 +132,7 @@ function wysiwyg_form_alter(&$form, &$form_state) {
  * @see wysiwyg_elements(), filter_form()
  */
 function wysiwyg_process_form(&$form) {
+  static $triggered_fields = array();
   // Iterate over element children; resetting array keys to access last index.
   if ($children = array_values(element_children($form))) {
     foreach ($children as $index => $item) {
@@ -156,17 +157,13 @@ function wysiwyg_process_form(&$form) {
             // element on the same level.
             continue;
           }
-
-          // If this textarea is #resizable and we will load at least one
-          // editor, then only load the behavior and let the 'none' editor
-          // attach/detach it to avoid hi-jacking the UI. Due to our CSS class
-          // parsing, we can add arbitrary parameters for each input format.
-          // The #resizable property will be removed below, if at least one
-          // profile has been loaded.
-          $extra_class = '';
+          $settings = array(
+            'field' => $field['#id'],
+          );
+          // If this textarea is #resizable the 'none' editor will attach/detach
+          // it to avoid hi-jacking the UI.
           if (!empty($field['#resizable'])) {
-            $extra_class = ' wysiwyg-resizable-1';
-            drupal_add_js('misc/textarea.js');
+            $settings['resizable'] = 1;
           }
 
           // Determine the available input formats. The last child element is a
@@ -178,19 +175,29 @@ function wysiwyg_process_form(&$form) {
           if (($key = array_search('format', $formats)) !== FALSE) {
             unset($formats[$key]);
           }
-          foreach ($formats as $format) {
-            // Default to 'none' editor (Drupal's default behaviors).
-            $editor = 'none';
-            $status = 1;
-            $toggle = 1;
+          if (count($formats) > 1) {
+            // Let the client check the radio buttons for the active format.
+            $settings['select'] = $element[reset($formats)]['#name'];
+          }
+          else {
+            // Directly specify which the single available format is.
+            $settings['activeFormat'] = reset($formats);
+          }
+          foreach ($formats as $format_id) {
+            $format = 'format' . $format_id;
+            // Initialize default settings, defaulting to 'none' editor.
+            $settings[$format] = array(
+              'editor' => 'none',
+              'status' => 1,
+              'toggle' => 1,
+            );
             // Fetch the profile associated to this input format.
-            $profile = wysiwyg_get_profile($format);
+            $profile = wysiwyg_get_profile($format_id);
             if ($profile) {
-              $loaded = TRUE;
-              $editor = $profile->editor;
-              $status = (int) wysiwyg_user_get_status($profile);
+              $settings[$format]['editor'] = $profile->editor;
+              $settings[$format]['status'] = (int) wysiwyg_user_get_status($profile);
               if (isset($profile->settings['show_toggle'])) {
-                $toggle = (int) $profile->settings['show_toggle'];
+                $settings[$format]['toggle'] = (int) $profile->settings['show_toggle'];
               }
               // Check editor theme (and reset it if not/no longer available).
               $theme = wysiwyg_get_editor_themes($profile, (isset($profile->settings['theme']) ? $profile->settings['theme'] : ''));
@@ -200,27 +207,24 @@ function wysiwyg_process_form(&$form) {
               // Add profile settings for this input format.
               wysiwyg_add_editor_settings($profile, $theme);
             }
-
-            // Use a prefix/suffix for a single input format, or attach to input
-            // format selector radio buttons.
-            if (isset($element['format']['guidelines'])) {
-              $element['format']['guidelines']['#prefix'] = '<div class="wysiwyg wysiwyg-format-' . $format . ' wysiwyg-editor-' . $editor . ' wysiwyg-field-' . $field['#id'] . ' wysiwyg-status-' . $status . ' wysiwyg-toggle-' . $toggle . $extra_class . '">';
-              $element['format']['guidelines']['#suffix'] = '</div>';
-              // Edge-case: Default format contains no input filters.
-              if (empty($element['format']['guidelines']['#value'])) {
-                $element['format']['guidelines']['#value'] = ' ';
-              }
-            }
-            else {
-              $element[$format]['#attributes']['class'] = (isset($element[$format]['#attributes']['class']) ? $element[$format]['#attributes']['class'] . ' ' : '');
-              $element[$format]['#attributes']['class'] .= 'wysiwyg wysiwyg-format-' . $format . ' wysiwyg-editor-' . $editor . ' wysiwyg-field-' . $field['#id'] . ' wysiwyg-status-' . $status . ' wysiwyg-toggle-' . $toggle . $extra_class;
-            }
           }
-
-          // If we loaded at least one editor, then the 'none' editor will
-          // handle resizable textareas instead of core.
-          if (isset($loaded) && !empty($field['#resizable'])) {
-            $field['#resizable'] = FALSE;
+          // Tag this field to make it easier to find on the client.
+          if (empty($field['#attributes']['class'])) {
+            $field['#attributes']['class'] = 'wysiwyg';
+          }
+          else {
+            if (!isset($field['#attributes']['class'])) {
+              $field['#attributes']['class'] = '';
+            }
+            $field['#attributes']['class'] .= ' wysiwyg';
+          }
+          if (!isset($triggered_fields[$field['#id']])) {
+            drupal_add_js(array('wysiwyg' => array(
+              'triggers' => array(
+                $field['#id'] => $settings,
+              ),
+            )), 'setting');
+            $triggered_fields[$field['#id']] = TRUE;
           }
         }
         // If this element is 'format', do not recurse further.
@@ -231,6 +235,30 @@ function wysiwyg_process_form(&$form) {
     }
   }
   return $form;
+}
+
+/**
+ * Implementation of hook_js_alter().
+ *
+ * Applies overrides to CTools' scripts command or it will execute editor
+ * scripts twice, causing instances/state to be lost (YUI Editor).
+ *
+ * Needs the jsalter module for this to be called in D6.
+ */
+function wysiwyg_js_alter(&$scripts, $scope, &$queryString) {
+  if (module_exists('ctools')) {
+    $path = drupal_get_path('module', 'ctools') . '/js/ajax-responder.js';
+    if (isset($scripts['module'][$path])) {
+      // Add this directly to the scripts.
+      $scripts['module'][drupal_get_path('module', 'wysiwyg') . '/override-ctools-ajax.js'] = array(
+        'cache' => TRUE,
+        'defer' => FALSE,
+        'preprocess' => TRUE,
+      );
+      // Modules like jquery_update call drupal_get_js() again after this.
+      drupal_add_js(drupal_get_path('module', 'wysiwyg') . '/override-ctools-ajax.js');
+    }
+  }
 }
 
 /**
@@ -453,24 +481,32 @@ function wysiwyg_add_plugin_settings($profile) {
   $proxy = (isset($editor['proxy plugin']) ? key($editor['proxy plugin']) : '');
 
   // Process native editor plugins.
-  if (isset($editor['plugin settings callback'])) {
-    // @todo Require PHP 5.1 in 3.x and use array_intersect_key().
-    $profile_plugins_native = array();
-    foreach ($plugins[$editor['name']] as $plugin => $meta) {
-      // Skip Drupal plugins (handled below).
-      if ($plugin === $proxy) {
-        continue;
-      }
-      // Only keep native plugins that are enabled in this profile.
-      if (isset($profile->settings['buttons'][$plugin])) {
-        $profile_plugins_native[$plugin] = $meta;
+  $profile_plugins_native = array();
+  foreach ($plugins[$editor['name']] as $plugin => $meta) {
+    // Skip Drupal plugins (handled below) and 'core' functionality.
+    if ($plugin === $proxy || $plugin === 'default') {
+      continue;
+    }
+    // Only keep native plugins that are enabled in this profile.
+    if (isset($profile->settings['buttons'][$plugin])) {
+      $profile_plugins_native[$plugin] = $meta;
+      if (!isset($processed_plugins[$editor['name']][$plugin])) {
+        if (isset($editor['plugin meta callback'])) {
+          // Invoke the editor's plugin meta callback, so it can populate the
+          // global metadata for native plugins with required values.
+          $meta['name'] = $plugin;
+          if (($native_meta = call_user_func($editor['plugin meta callback'], $editor, $meta))) {
+            drupal_add_js(array('wysiwyg' => array('plugins' => array('native' => array($editor['name'] => array($plugin => $native_meta))))), 'setting');
+          }
+        }
+        $processed_plugins[$editor['name']][$plugin] = $meta;
       }
     }
+  }
+  if (!empty($profile_plugins_native) && isset($editor['plugin settings callback'])) {
     // Invoke the editor's plugin settings callback, so it can populate the
-    // settings for native external plugins with required values.
-    $settings_native = call_user_func($editor['plugin settings callback'], $editor, $profile, $profile_plugins_native);
-
-    if ($settings_native) {
+    // format specific settings for native plugins with required values.
+    if (($settings_native = call_user_func($editor['plugin settings callback'], $editor, $profile, $profile_plugins_native))) {
       drupal_add_js(array('wysiwyg' => array('plugins' => array('format' . $profile->format => array('native' => $settings_native)))), 'setting');
     }
   }
@@ -488,9 +524,13 @@ function wysiwyg_add_plugin_settings($profile) {
           // Load the Drupal plugin's JavaScript.
           drupal_add_js($meta['js path'] . '/' . $meta['js file']);
           // Add plugin-specific settings.
-          if (isset($meta['settings'])) {
-            drupal_add_js(array('wysiwyg' => array('plugins' => array('drupal' => array($plugin => $meta['settings'])))), 'setting');
+          $settings = (isset($meta['settings']) ? $meta['settings'] : array());
+          $settings['title'] = $meta['title'];
+          $settings['icon'] = base_path() . $meta['icon path'] . '/' . $meta['icon file'];
+          if (!empty($meta['css path']) && !empty($meta['css file'])) {
+            $settings['css'] = base_path() . $meta['css path'] . '/' . $meta['css file'];
           }
+          drupal_add_js(array('wysiwyg' => array('plugins' => array('drupal' => array($plugin => $settings)))), 'setting');
         }
         else {
           $profile_plugins_drupal[$plugin] = $processed_plugins[$proxy][$plugin];
