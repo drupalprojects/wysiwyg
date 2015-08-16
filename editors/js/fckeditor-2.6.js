@@ -196,6 +196,11 @@ Drupal.wysiwyg.editor.instance.fckeditor = {
   setContent: function (content) {
     var instance = FCKeditorAPI.GetInstance(this.field);
     instance.SetHTML(content);
+  },
+
+  isFullscreen: function () {
+    var cmd = FCKeditorAPI.GetInstance(this.field).Commands.LoadedCommands.FitWindow;
+    return !!(cmd && cmd.IsMaximized);
   }
 };
 

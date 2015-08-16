@@ -105,6 +105,15 @@ Drupal.wysiwyg.editor.instance.whizzywig = {
      clone.body.innerHTML = $field.val();
     }
     return tidyH(clone);
+  },
+
+  isFullscreen: function () {
+    // This relies on a global function which uses a global variable...
+    var idTa_old = idTa;
+    idTa = this.field;
+    var fullscreen = isFullscreen();
+    idTa = idTa_old;
+    return fullscreen;
   }
 };
 })(jQuery);

@@ -272,6 +272,11 @@ Drupal.wysiwyg.editor.instance.ckeditor = {
 
   getContent: function () {
     return CKEDITOR.instances[this.field].getData();
+  },
+
+  isFullscreen: function () {
+    var cmd = CKEDITOR.instances[this.field].commands.maximize;
+    return !!(cmd && cmd.state == CKEDITOR.TRISTATE_ON);
   }
 };
 
