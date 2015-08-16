@@ -22,7 +22,7 @@ function wysiwyg_whizzywig_editor() {
     'version callback' => 'wysiwyg_whizzywig_version',
     'settings form callback' => 'wysiwyg_whizzywig_settings_form',
     'settings callback' => 'wysiwyg_whizzywig_settings',
-    'plugin callback' => 'wysiwyg_whizzywig_plugins',
+    'plugin callback' => '_wysiwyg_whizzywig_plugins',
     'versions' => array(
       '55' => array(
         'js files' => array('whizzywig.js'),
@@ -131,7 +131,7 @@ function wysiwyg_whizzywig_settings($editor, $config, $theme) {
 /**
  * Return internal plugins for this editor; semi-implementation of hook_wysiwyg_plugin().
  */
-function wysiwyg_whizzywig_plugins($editor) {
+function _wysiwyg_whizzywig_plugins($editor) {
   return array(
     'default' => array(
       'buttons' => array(
