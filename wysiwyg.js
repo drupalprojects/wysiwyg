@@ -194,7 +194,9 @@ Drupal.behaviors.attachWysiwyg = function(context) {
   // Sync editor contents back to the original textarea before AHAH events.
   // D6 Core's jqyery.form.js triggers 'form.pre.serialize' and the version
   // shipped with jQuery Update module triggers 'form-pre-serialize'.
-  .bind('form.pre.serialize form-pre-serialize', function (ev, $form, ajax, other) {
+  // The order in which the events are bound matters, form.pre.serialize only
+  // fires if it is registered last.
+  .bind('form-pre-serialize form.pre.serialize', function (ev, $form, ajax, other) {
     var wysiwygs = $form.find('.wysiwyg-processed:input');
     wysiwygs.each(function () {
       Drupal.wysiwygDetach(context, this.id, 'serialize');
