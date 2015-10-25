@@ -16,7 +16,7 @@ function wysiwyg_whizzywig_editor() {
     'libraries' => array(
       '' => array(
         'title' => 'Default',
-        'files' => array('whizzywig.js', 'xhtml.js'),
+        'files' => array('whizzywig.js'),
       ),
     ),
     'version callback' => 'wysiwyg_whizzywig_version',
@@ -26,6 +26,12 @@ function wysiwyg_whizzywig_editor() {
     'versions' => array(
       '55' => array(
         'js files' => array('whizzywig.js'),
+        'libraries' => array(
+          '' => array(
+            'title' => 'Default',
+            'files' => array('whizzywig.js', 'xhtml.js'),
+          ),
+        ),
       ),
       '56' => array(
         'js files' => array('whizzywig-56.js'),
