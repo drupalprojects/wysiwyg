@@ -3,7 +3,7 @@ jQuery.support = jQuery.support || {}; // D6- only.
 
 Drupal.wysiwyg = Drupal.wysiwyg || { 'instances': {} };
 
-Drupal.wysiwyg.editor = Drupal.wysiwyg.editor || { 'init': {}, 'attach': {}, 'detach': {}, 'instance': {} };
+Drupal.wysiwyg.editor = Drupal.wysiwyg.editor || { 'init': {}, 'update': {}, 'attach': {}, 'detach': {}, 'instance': {} };
 
 Drupal.wysiwyg.plugins = Drupal.wysiwyg.plugins || {};
 
