@@ -363,7 +363,7 @@ function wysiwyg_load_editor($profile) {
         $files = $editor['js files'];
       }
       foreach ($files as $file) {
-        drupal_add_js($editor['js path'] . '/' . $file);
+        drupal_add_js($editor['js path'] . '/' . $file, 'module', 'footer');
       }
       // Load CSS stylesheets for this editor.
       $files = array();
