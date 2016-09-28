@@ -47,7 +47,7 @@ Drupal.wysiwyg.editor.attach.none = function(context, params, settings) {
  * @see Drupal.detachBehaviors
  */
 Drupal.wysiwyg.editor.detach.none = function (context, params, trigger) {
-  if (typeof params != 'undefined' && (trigger != 'serialize')) {
+  if (trigger != 'serialize') {
     var $textarea = $('#' + params.field, context).removeClass('textarea-processed').removeClass('resizable');
     var $div = $textarea.parents('div.resizable-textarea');
     $div.before($textarea);
