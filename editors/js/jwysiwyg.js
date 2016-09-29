@@ -5,7 +5,7 @@
  */
 Drupal.wysiwyg.editor.attach.jwysiwyg = function(context, params, settings) {
   // Attach editor.
-  $('#' + params.field).wysiwyg();
+  $('#' + params.field).wysiwyg(settings);
 };
 
 /**
