@@ -327,18 +327,20 @@ function wysiwyg_load_editor($profile) {
           // @todo Aggregate all initialization scripts into one file.
           $js_path = file_create_path('js');
           file_check_directory($js_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+          $js_path .= '/';
           $hash = base64_encode(hash('sha256', $init, TRUE));
           // Modify the hash so it's safe to use in URLs.
           $hash = strtr($hash, array('+' => '-', '/' => '_', '=' => ''));
-          $uri = $js_path . '/wysiwyg_' . $name . '_' . $hash . '.js';
-          $init_exists = file_exists($uri);
+          $filename = 'wysiwyg_' . $name . '_' . $hash . '.js';
+          $init_exists = file_exists($js_path . $filename);
           // Attempt to create the file, or fall back to an inline script (which
           // will not work in Ajax calls).
-          if (!$init_exists && !file_save_data($init, $uri, FILE_EXISTS_REPLACE)) {
+          if (!$init_exists && !file_save_data($init, $js_path . $filename, FILE_EXISTS_REPLACE)) {
             drupal_add_js($init, 'inline', 'header', FALSE, TRUE, TRUE);
           }
           else {
-            drupal_add_js($uri, 'core', 'header', FALSE, TRUE, TRUE);
+            $path_prefix = (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PRIVATE ? 'system/files/js/' : $js_path);
+            drupal_add_js($path_prefix . $filename, 'core', 'header', FALSE, TRUE, TRUE);
           }
         }
       }
@@ -768,6 +770,18 @@ function wysiwyg_user_get_status($profile, $account = NULL) {
   }
 
   return (bool) $status;
+}
+
+/**
+ * Implements hook_file_download().
+ */
+function wysiwyg_file_download($file) {
+  if (preg_match('/^js\/wysiwyg_(\w+)_.+\.js$/', $file, $matches)) {
+    $editor_name = $matches[1];
+    if (($editor = wysiwyg_get_editor($editor_name)) && $editor['installed']) {
+      return array('Content-type: text/javascript');
+    }
+  }
 }
 
 /**
