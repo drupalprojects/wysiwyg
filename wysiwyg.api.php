@@ -254,6 +254,16 @@ function hook_INCLUDE_editor() {
 }
 
 /**
+ * Alter editor definitions defined by other modules.
+ *
+ * @param array $editors
+ *   The Editors to alter.
+ */
+function hook_wysiwyg_editor_alter(&$editors) {
+  $editors['editor']['version callback'] = 'my_own_version_callback';
+}
+
+/**
  * Act on editor profile settings.
  *
  * This hook is invoked from wysiwyg_get_editor_config() after the JavaScript

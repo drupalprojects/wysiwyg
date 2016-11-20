@@ -868,6 +868,9 @@ function wysiwyg_get_all_editors() {
     $editors[$editor] = array_merge($editors[$editor], $editors[$editor]['versions'][$version]);
     unset($editors[$editor]['versions']);
   }
+
+  drupal_alter('wysiwyg_editor', $editors);
+
   return $editors;
 }
 
