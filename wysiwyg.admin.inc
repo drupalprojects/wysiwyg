@@ -122,7 +122,7 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
         $icon = '';
         if (!empty($meta['path'])) {
           // @todo Button icon locations are different in editors, editor versions,
-          //   and contrib/custom plugins (like Image Assist, f.e.).
+          // and contrib/custom plugins (like Image Assist, f.e.).
           $img_src = $meta['path'] . "/images/$name.gif";
           // Handle plugins that have more than one button.
           if (!file_exists($img_src)) {
