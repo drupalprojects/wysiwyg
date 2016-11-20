@@ -657,11 +657,12 @@ function wysiwyg_get_css() {
   }
 
   $files = array();
+  $query = ($string = variable_get('css_js_query_string', NULL)) ? '?' . $string : '';
   foreach (drupal_add_css() as $media => $css) {
     if ($media != 'print') {
       foreach ($css['theme'] as $filepath => $preprocess) {
         if (file_exists($filepath)) {
-          $files[] = base_path() . $filepath;
+          $files[] = base_path() . $filepath . $query;
         }
       }
     }
