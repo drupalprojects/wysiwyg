@@ -680,9 +680,10 @@ function wysiwyg_get_css() {
   }
 
   $files = array();
+  $query = ($string = variable_get('css_js_query_string', NULL)) ? '?' . $string : '';
   foreach (drupal_add_css() as $filepath => $info) {
     if ($info['group'] >= CSS_THEME && $info['type'] != 'inline' && $info['media'] != 'print' && file_exists($filepath)) {
-      $files[] = file_create_url($filepath);
+      $files[] = file_create_url($filepath . $query);
     }
   }
   return $files;
