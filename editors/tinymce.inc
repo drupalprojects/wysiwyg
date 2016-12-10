@@ -140,6 +140,7 @@ function wysiwyg_tinymce_settings_form(&$form, &$form_state) {
     'theme_advanced_statusbar_location' => 'bottom',
     'preformatted' => FALSE,
     'remove_linebreaks' => TRUE,
+    'theme_advanced_path' => TRUE,
     'theme_advanced_resizing' => TRUE,
     'theme_advanced_toolbar_align' => 'left',
     'theme_advanced_toolbar_location' => 'top',
@@ -164,10 +165,23 @@ function wysiwyg_tinymce_settings_form(&$form, &$form_state) {
 
   $form['appearance']['theme_advanced_statusbar_location'] = array(
     '#type' => 'select',
-    '#title' => t('Path location'),
+    '#title' => t('Status bar location'),
     '#default_value' => $settings['theme_advanced_statusbar_location'],
     '#options' => array('none' => t('Hide'), 'top' => t('Top'), 'bottom' => t('Bottom')),
-    '#description' => t('Where to display the path to HTML elements (i.e. <code>body > table > tr > td</code>).') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'theme_advanced_statusbar_location', '@url' => url('http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_statusbar_location'))),
+    '#description' => t('This option enables you to specify where the element statusbar with the path and resize tool should be located.') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'theme_advanced_statusbar_location', '@url' => url('http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_statusbar_location'))),
+  );
+
+  $form['appearance']['theme_advanced_path'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable the element path'),
+    '#default_value' => $settings['theme_advanced_path'],
+    '#return_value' => 1,
+    '#description' => t('This option gives you the ability to enable/disable the element path.') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'theme_advanced_path', '@url' => url('http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_path'))),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="theme_advanced_statusbar_location"]' => array('value' => 'none'),
+      ),
+    ),
   );
 
   $form['appearance']['theme_advanced_resizing'] = array(
@@ -175,7 +189,12 @@ function wysiwyg_tinymce_settings_form(&$form, &$form_state) {
     '#title' => t('Enable resizing button'),
     '#default_value' => $settings['theme_advanced_resizing'],
     '#return_value' => 1,
-    '#description' => t('This option gives you the ability to enable/disable the resizing button. If enabled, the Path location toolbar must be set to "Top" or "Bottom" in order to display the resize icon.') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'theme_advanced_resizing', '@url' => url('http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_resizing'))),
+    '#description' => t('This option gives you the ability to enable/disable the resizing button.') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'theme_advanced_resizing', '@url' => url('http://www.tinymce.com/wiki.php/Configuration3x:theme_advanced_resizing'))),
+    '#states' => array(
+      'invisible' => array(
+        ':input[name="theme_advanced_statusbar_location"]' => array('value' => 'none'),
+      ),
+    ),
   );
 
   $form['output']['verify_html'] = array(
@@ -444,6 +463,7 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
         'theme_advanced_resize_horizontal' => FALSE,
         'theme_advanced_resizing_use_cookie' => FALSE,
         'theme_advanced_statusbar_location' => isset($config['theme_advanced_statusbar_location']) ? $config['theme_advanced_statusbar_location'] : 'bottom',
+        'theme_advanced_path' => isset($config['theme_advanced_path']) ? $config['theme_advanced_path'] : 1,
         'theme_advanced_resizing' => isset($config['theme_advanced_resizing']) ? $config['theme_advanced_resizing'] : 1,
         'theme_advanced_toolbar_location' => isset($config['theme_advanced_toolbar_location']) ? $config['theme_advanced_toolbar_location'] : 'top',
         'theme_advanced_toolbar_align' => isset($config['theme_advanced_toolbar_align']) ? $config['theme_advanced_toolbar_align'] : 'left',
