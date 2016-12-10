@@ -385,7 +385,7 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
     // Versions below 3.0.1 could only handle one stylesheet.
     if (version_compare($editor['installed version'], '3.0.1.4391', '<')) {
       if ($config['css_setting'] == 'theme') {
-        $css = wysiwyg_get_css();
+        $css = wysiwyg_get_css(isset($config['css_theme']) ? $config['css_theme'] : '');
         $settings['contentsCss'] = reset($css);
       }
       elseif ($config['css_setting'] == 'self' && isset($config['css_path'])) {
@@ -398,7 +398,7 @@ function wysiwyg_ckeditor_settings($editor, $config, $theme) {
     }
     else {
       if ($config['css_setting'] == 'theme') {
-        $settings['contentsCss'] = wysiwyg_get_css();
+        $settings['contentsCss'] = wysiwyg_get_css(isset($config['css_theme']) ? $config['css_theme'] : '');
       }
       elseif ($config['css_setting'] == 'self' && isset($config['css_path'])) {
         $settings['contentsCss'] = explode(',', strtr($config['css_path'], array(

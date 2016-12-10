@@ -197,7 +197,7 @@ function wysiwyg_fckeditor_settings($editor, $config, $theme) {
 
   if (isset($config['css_setting'])) {
     if ($config['css_setting'] == 'theme') {
-      $settings['EditorAreaCSS'] = implode(',', wysiwyg_get_css());
+      $settings['EditorAreaCSS'] = implode(',', wysiwyg_get_css(isset($config['css_theme']) ? $config['css_theme'] : ''));
     }
     elseif ($config['css_setting'] == 'self' && isset($config['css_path'])) {
       $settings['EditorAreaCSS'] = strtr($config['css_path'], array(

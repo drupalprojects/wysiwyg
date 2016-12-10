@@ -202,7 +202,7 @@ function wysiwyg_wymeditor_settings($editor, $config, $theme) {
   if (isset($config['css_setting'])) {
     if ($config['css_setting'] == 'theme') {
       // WYMeditor only supports one CSS file currently.
-      $css = wysiwyg_get_css();
+      $css = wysiwyg_get_css(isset($config['css_theme']) ? $config['css_theme'] : '');
       $settings['stylesheet'] = reset($css);
     }
     elseif ($config['css_setting'] == 'self' && isset($config['css_path'])) {

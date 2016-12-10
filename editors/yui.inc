@@ -238,7 +238,7 @@ function wysiwyg_yui_settings($editor, $config, $theme) {
 
   if (isset($config['css_setting'])) {
     if ($config['css_setting'] == 'theme') {
-      $settings['extracss'] = wysiwyg_get_css();
+      $settings['extracss'] = wysiwyg_get_css(isset($config['css_theme']) ? $config['css_theme'] : '');
     }
     elseif ($config['css_setting'] == 'self' && isset($config['css_path'])) {
       $settings['extracss'] = strtr($config['css_path'], array(

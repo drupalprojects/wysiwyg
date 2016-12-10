@@ -301,3 +301,35 @@ function hook_wysiwyg_editor_settings_alter(&$settings, $context) {
     $settings['stylesheetParser_skipSelectors'] = wysiwyg_wrap_js_regexp('(^body\.|^caption\.|\.high|^\.)', 'i');
   }
 }
+
+/**
+ * Act on stylesheets used in WYSIWYG mode.
+ *
+ * This hook acts like a pre-render callback to the style element normally
+ * output in the document header. It is invoked before Core has
+ * sorted/grouped/aggregated stylehsheets and changes made here will only have
+ * an effect on the stylesheets used in an editor's WYSIWYG mode.
+ * Wysiwyg will only keep items if their type is 'file' or 'inline' and only if
+ * they are in the group CSS_THEME.
+ *
+ * This hook may be invoked several times in a row with slightly different or
+ * altered stylesheets if something like Color module is used by a theme.
+ * Wysiwyg will cache the final list of stylesheets so this hook will only be
+ * called while the cache is being rebuilt.
+ *
+ * Messages set in this hook will not be displayed because the processing is
+ * done in an internal HTTP request and the page output is ignored.
+ *
+ * @param $elements
+ *   The style element which will be rendered. Added stylesheets are found in
+ *   $element['#items']['path/to/stylesheet.css'].
+ * @param $context
+ *   An array with the following keys:
+ *   - theme: The name of the theme which was used when the list of stylesheets
+ *     was generated.
+ */
+function hook_wysiwyg_editor_styles_alter(&$element, $context) {
+  if ($context['theme'] == 'alpha') {
+    unset($element['#items']['sites/all/themes/omega/alpha/css/alpha-debug.css']);
+  }
+}

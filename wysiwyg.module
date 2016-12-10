@@ -4,6 +4,7 @@
  * @file
  * Integrates client-side editors with Drupal.
  */
+require_once 'includes/styling.inc';
 
 /**
  * Implements hook_entity_info().
@@ -88,6 +89,15 @@ function wysiwyg_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'wysiwyg.dialog.inc',
+  );
+  $items['wysiwyg_theme/%'] = array(
+    'theme callback' => '_wysiwyg_theme_callback',
+    'theme arguments' => array(1),
+    'page callback' => '_wysiwyg_theme_check_active',
+    'page arguments' => array(1),
+    'delivery callback' => '_wysiwyg_delivery_dummy',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -184,7 +194,12 @@ function wysiwyg_help($path, $arg) {
  */
 function wysiwyg_element_info_alter(&$types) {
   $types['text_format']['#pre_render'][] = 'wysiwyg_pre_render_text_format';
+  // For filtering stylesheets before Core aggregates them.
+  array_unshift($types['styles']['#pre_render'], '_wysiwyg_filter_editor_styles');
+  // For recording and caching the added stylesheets.
+  $types['styles']['#pre_render'][] = '_wysiwyg_pre_render_styles';
 }
+
 
 /**
  * Process a text format widget to load and attach editors.
@@ -665,28 +680,104 @@ function wysiwyg_get_editor_config($profile, $theme) {
  * This assumes that the content editing area only needs stylesheets defined
  * for the scope 'theme'.
  *
+ * Performs a background request of a dummy page to cache as many of a theme's
+ * stylesheets as possible before returning the cached list.
+ *
+ * Note: if set to explicitly use the current admin theme by name, no access
+ * check on the 'view the administration theme' permission is performed.
+ *
+ * @param $theme
+ *   The id of a theme to get stylesheets for. Defaults to the current theme.
+ *
  * @return
  *   An array containing CSS files, including proper base path.
  */
-function wysiwyg_get_css() {
-  static $files;
-
-  if (isset($files)) {
-    return $files;
+function wysiwyg_get_css($theme = NULL) {
+  // Default to the node edit theme, if the user has access.
+  if (empty($theme)) {
+    $theme = variable_get('node_admin_theme') && user_access('view the administration theme') ? variable_get('admin_theme') : variable_get('theme_default', 'bartik');
   }
-  // In node form previews, the theme has not been initialized yet.
-  if (!empty($_POST)) {
+  // If set to use the admin theme, ensure the user has access.
+  elseif ($theme == 'wysiwyg_theme_admin' && user_access('view the administration theme') && $admin_theme = variable_get('admin_theme')) {
+    $theme = $admin_theme;
+  }
+  // Make sure the theme system is initialized.
+  $themes = list_themes();
+  if (!isset($themes[$theme])) {
     drupal_theme_initialize();
   }
-
-  $files = array();
-  $query = ($string = variable_get('css_js_query_string', NULL)) ? '?' . $string : '';
-  foreach (drupal_add_css() as $filepath => $info) {
-    if ($info['group'] >= CSS_THEME && $info['type'] != 'inline' && $info['media'] != 'print' && file_exists($filepath)) {
-      $files[] = file_create_url($filepath) . $query;
+  // Ensure the selected theme is enabled (or is the admin theme).
+  if (!drupal_theme_access($theme)) {
+    $theme = variable_get('theme_default', 'bartik');
+  }
+  $cached = cache_get('wysiwyg_css');
+  $css = array();
+  // Trigger a cache update if:
+  // this is NOT the wysiwyg_theme page (avoid loop),
+  // the cache is empty or does not have the current theme,
+  // the CSS/JS cache-busting query string has changed,
+  // or the theme's aggregation state has changed.
+  $update_cache = strpos(current_path(), 'wysiwyg_theme/') === FALSE && (
+    !$cached || (
+      empty($cached->data[$theme])
+      || $cached->data[$theme]['aggregated'] != variable_get('preprocess_css', FALSE))
+      || $cached->data['_css_js_query_string'] != variable_get('css_js_query_string'));
+  if ($update_cache) {
+    $url = url('wysiwyg_theme/' . $theme, array('absolute' => TRUE, 'max_redirects' => 0));
+    $response = drupal_http_request($url);;
+    $cached = cache_get('wysiwyg_css');
+    if ($cached && !empty($cached->data[$theme])) {
+      $css = $cached->data[$theme]['files'];
     }
   }
-  return $files;
+  elseif (!empty($cached->data[$theme])) {
+    $css = $cached->data[$theme]['files'];
+  }
+  return $css;
+}
+
+/**
+ * Implements hook_themes_enabled().
+ */
+function wysiwyg_themes_enabled($theme_list) {
+  $cached = cache_get('wysiwyg_css');
+  foreach ($theme_list as $theme) {
+    if ($cached && !empty($cached->data)) {
+      $css = $cached->data;
+      unset($css[$theme]);
+    }
+  }
+  cache_set('wysiwyg_css', $css);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters the system's theme settings form to react when themes change.
+ */
+function wysiwyg_form_system_theme_settings_alter(&$form, &$form_state, $form_id) {
+  $form['#submit'][] = '_wysiwyg_system_theme_settings_submit';
+}
+
+/**
+ * Submit callback for the theme settings form.
+ *
+ * Removes the edited theme from the cache.
+ */
+function _wysiwyg_system_theme_settings_submit($form, &$form_state) {
+  $theme = NULL;
+  if ($form_state['build_info']['form_id'] == 'system_theme_settings') {
+    $theme = $form_state['theme'];
+  }
+  if ($theme !== NULL) {
+    $cached = cache_get('wysiwyg_css');
+    if ($cached && !empty($cached->data)) {
+      $css = $cached->data;
+      unset($css[$theme]);
+      cache_set('wysiwyg_css', $css);
+    }
+  }
+  wysiwyg_get_css($theme);
 }
 
 /**
