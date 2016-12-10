@@ -132,16 +132,23 @@ function wysiwyg_tinymce_settings_form(&$form, &$form_state) {
   $settings = $profile->settings;
   $settings += array(
     'apply_source_formatting' => FALSE,
-    // Also available, but buggy in TinyMCE 2.x: blockquote,code,dt,dd,samp.
-    'theme_advanced_blockformats' => 'p,address,pre,h2,h3,h4,h5,h6,div',
     'convert_fonts_to_spans' => TRUE,
     'paste_auto_cleanup_on_paste' => TRUE,
-    'theme_advanced_styles' => '',
-    'theme_advanced_statusbar_location' => 'bottom',
+    'paste_convert_middot_lists' => TRUE,
+    'paste_max_consecutive_linebreaks' => 2,
+    'paste_retain_style_properties' => 'none',
+    'paste_remove_styles' => TRUE,
+    'paste_remove_styles_if_webkit' => TRUE,
+    'paste_strip_class_attributes' => 'mso',
+    'paste_text_linebreaktype' => 'combined',
     'preformatted' => FALSE,
     'remove_linebreaks' => TRUE,
+    // Also available, but buggy in TinyMCE 2.x: blockquote,code,dt,dd,samp.
+    'theme_advanced_blockformats' => 'p,address,pre,h2,h3,h4,h5,h6,div',
     'theme_advanced_path' => TRUE,
     'theme_advanced_resizing' => TRUE,
+    'theme_advanced_statusbar_location' => 'bottom',
+    'theme_advanced_styles' => '',
     'theme_advanced_toolbar_align' => 'left',
     'theme_advanced_toolbar_location' => 'top',
     'verify_html' => TRUE,
@@ -264,17 +271,138 @@ function wysiwyg_tinymce_settings_form(&$form, &$form_state) {
   $form['paste'] = array(
     '#type' => 'fieldset',
     '#title' => t('Paste plugin'),
-    '#description' => t('Settings for the paste plugin.'),
+    '#description' => t('Settings for the <a href="@url">@plugin</a> plugin.', array('@plugin' => 'paste', '@url' => url('http://www.tinymce.com/wiki.php/Plugin3x:paste'))),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'advanced',
   );
+
   $form['paste']['paste_auto_cleanup_on_paste'] = array(
     '#type' => 'checkbox',
     '#title' => t('Process contents on paste'),
     '#default_value' => !empty($settings['paste_auto_cleanup_on_paste']),
     '#return_value' => 1,
-    '#description' => t('If enabled, contents will be automatically processed when you paste using Ctrl+V or similar methods. Cleaning up contents from MS Word or pasting as plain text will <strong>not</strong> work without this.') . ' ' . t('Uses the <a href="@url">@setting</a> setting internally.', array('@setting' => 'paste_auto_cleanup_on_paste', '@url' => url('http://www.tinymce.com/wiki.php/Plugin3x:paste'))),
+    '#description' => t('If enabled, contents will be automatically processed when you paste using Ctrl+V or similar methods. Cleaning up contents from MS Word or pasting as plain text will <strong>not</strong> work without this.'),
+  );
+
+  $form['paste']['paste_block_drop'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Block drag/drop'),
+    '#default_value' => !empty($settings['paste_block_drop']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, blocks drag/drop from/to the editor and inside it.'),
+  );
+
+  $form['paste']['paste_retain_style_properties'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Retain style properties'),
+    '#default_value' => $settings['paste_retain_style_properties'],
+    '#description' => t('Comma separated list of style properties to retain during the paste operation from Word. For example: "font-size,color". If you want to remove all style properties use an empty string "" or "none". If you want to keep all style properties, use "all" or "*".'),
+  );
+
+  $form['paste']['paste_strip_class_attributes'] = array(
+    '#type' => 'select',
+    '#title' => t('Strip class attributes'),
+    '#options' => array(
+      'none' => t('None'),
+      'all' => t('All'),
+      'mso' => t('MS Office'),
+    ),
+    '#default_value' => $settings['paste_strip_class_attributes'],
+    '#description' => t('Enables you to strip the class attributes when pasted.'),
+  );
+
+  $form['paste']['paste_remove_spans'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove spans'),
+    '#default_value' => !empty($settings['paste_remove_spans']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, removes all span elements when pasting.'),
+  );
+
+  $form['paste']['paste_remove_styles'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove styles'),
+    '#default_value' => !empty($settings['paste_remove_styles']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, removes all style information when pasting, regardless of browser type. Pasting from Word 2000 will cause TinyMCE to error.'),
+  );
+
+  $form['paste']['paste_remove_styles_if_webkit'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Remove styles in WebKit'),
+    '#default_value' => !empty($settings['paste_remove_styles_if_webkit']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, removes all style information when pasting in WebKit since it has a serious paste bug.'),
+  );
+
+  $form['paste']['paste_convert_middot_lists'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert Word lists'),
+    '#default_value' => !empty($settings['paste_convert_middot_lists']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, the paste plugin tries to convert Word lists into semantic XHTML list elements.'),
+  );
+
+  $form['paste']['paste_convert_headers_to_strong'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert headers to strong'),
+    '#default_value' => !empty($settings['paste_convert_headers_to_srong']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, the paste plugin tries to convert Word headers to strong tags.'),
+  );
+
+  $form['paste']['paste_max_consecutive_linebreaks'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max consecutive linebreaks'),
+    '#size' => 5,
+    '#maxlength' => '10',
+    '#default_value' => !empty($settings['paste_max_consecutive_linebreaks']),
+    '#description' => t('The maximum number of consecutive linebreaks to use.'),
+  );
+
+  $form['paste']['paste_text_use_dialog'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use dialog'),
+    '#default_value' => !empty($settings['paste_text_use_dialog']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, uses legacy mode for the Paste as Text button. Will use a dialog instead of treating the button as a toggle.'),
+  );
+
+  $form['paste']['paste_text_sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sticky "Paste text" button'),
+    '#default_value' => !empty($settings['paste_text_sticky']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, keeps the "Paste text" button selected after pasting. Requires the "Paste text" button and "Process contents on paste" to be enabled.'),
+  );
+
+  $form['paste']['paste_text_sticky_default'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Paste as plain text by default'),
+    '#default_value' => !empty($settings['paste_text_sticky_default']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, the "Paste text" button is selected when the editor starts. Requires the "Paste text" button and "Process contents on paste" to be enabled.'),
+  );
+
+  $form['paste']['paste_text_notifyalways'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Always notify when pasting plain text'),
+    '#default_value' => !empty($settings['paste_text_notifyalways']),
+    '#return_value' => 1,
+    '#description' => t('If enabled, users will be notified each time plain text pasting mode is enabled.'),
+  );
+
+  $form['paste']['paste_text_linebreaktype'] = array(
+    '#type' => 'select',
+    '#title' => t('Linebreak type'),
+    '#options' => array(
+      'combined' => t('Combined'),
+      'p' => t('<p>'),
+      'br' => t('<br>'),
+    ),
+    '#default_value' => $settings['paste_text_linebreaktype'],
+    '#description' => t('Converts plain text linebreaks to br or p elements.'),
   );
 }
 
@@ -360,6 +488,20 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
     'convert_fonts_to_spans',
     'language',
     'paste_auto_cleanup_on_paste',
+    'paste_block_drop',
+    'paste_convert_middot_lists',
+    'paste_convert_headers_to_strong',
+    'paste_max_consecutive_linebreaks',
+    'paste_remove_spans',
+    'paste_remove_styles',
+    'paste_remove_styles_if_webkit',
+    'paste_retain_style_properties',
+    'paste_strip_class_attributes',
+    'paste_text_linebreaktype',
+    'paste_text_notifyalways',
+    'paste_text_use_dialog',
+    'paste_text_sticky',
+    'paste_text_sticky_default',
     'preformatted',
     'remove_linebreaks',
     'theme_advanced_blockformats',
@@ -369,6 +511,7 @@ function wysiwyg_tinymce_settings($editor, $config, $theme) {
       $settings[$setting_name] = $config[$setting_name];
     }
   }
+
   if (isset($config['verify_html'])) {
     // TinyMCE performs a type-agnostic comparison on this particular setting.
     $settings['verify_html'] = (bool) $config['verify_html'];
