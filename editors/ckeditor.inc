@@ -154,6 +154,13 @@ function wysiwyg_ckeditor_settings_form(&$form, &$form_state) {
     $ckeditor_defaults['pasteFromWordRemoveFontStyles'] = TRUE;
     $ckeditor_defaults['pasteFromWordRemoveStyles'] = TRUE;
   }
+  if (version_compare($installed_version, '4.6.0', '>=')) {
+    // Disabled by default, deprecated.
+    $ckeditor_defaults['pasteFromWordRemoveFontStyles'] = FALSE;
+    // Dropped, no effect.
+    unset($ckeditor_defaults['pasteFromWordNumberedHeadingToList'],
+      $ckeditor_defaults['pasteFromWordRemoveStyles']);
+  }
 
   if (version_compare($installed_version, '3.2.1', '>=')) {
     $ckeditor_defaults['stylesSet'] = '';
@@ -302,6 +309,12 @@ function wysiwyg_ckeditor_settings_form(&$form, &$form_state) {
 
   }
 
+  if (version_compare($installed_version, '4.6.0', '>=')) {
+    $form['paste']['pasteFromWord']['pasteFromWordRemoveFontStyles']['#description'] .= '<br />' . t('This setting will be deprecated in the future. Use ACF to replicate the effect of enabling it.');
+    unset($form['paste']['pasteFromWord']['pasteFromWordNumberedHeadingToList'],
+      $form['paste']['pasteFromWord']['pasteFromWordRemoveStyles']);
+  }
+
   $form['css']['block_formats'] = array(
     '#type' => 'textfield',
     '#title' => t('Block formats'),
@@ -374,7 +387,7 @@ EOL;
  *   Drupal.settings.wysiwyg.configs.{editor}
  */
 function wysiwyg_ckeditor_settings($editor, $config, $theme) {
-  $default_skin = (version_compare($editor['installed version'], '4.0.0', '<') ? 'kama' : 'moono');
+  $default_skin = (version_compare($editor['installed version'], '4.0.0', '<') ? 'kama' : (version_compare($editor['installed version'], '4.6.0', '<') ? 'moono' : 'moono-lisa'));
   $settings = array(
     // Needed to make relative paths work in the editor.
     'baseHref' => $GLOBALS['base_url'] . '/',
@@ -673,6 +686,7 @@ function _wysiwyg_ckeditor_plugins($editor) {
         'SpellChecker' => t('Check spelling'), 'Scayt' => t('Spell check as you type'),
         'About' => t('About'),
         'Templates' => t('Templates'),
+        'CopyFormatting' => t('Copy Formatting'),
       ),
       'internal' => TRUE,
     ),
@@ -687,6 +701,9 @@ function _wysiwyg_ckeditor_plugins($editor) {
   }
   if (version_compare($editor['installed version'], '3.5.0.6260', '<')) {
     unset($plugins['default']['buttons']['Iframe']);
+  }
+  if (version_compare($editor['installed version'], '4.6.0', '<')) {
+    unset($plugins['default']['CopyFormatting']);
   }
   return $plugins;
 }
@@ -724,8 +741,12 @@ function _wysiwyg_ckeditor_group($button) {
     case 'Strike':
     case 'Subscript':
     case 'Superscript':
-    case 'RemoveFormat':
       $group = 'basicstyles';
+      break;
+
+    case 'RemoveFormat':
+    case 'CopyFormatting':
+      $group = 'cleanup';
       break;
 
     case 'NumberedList':
