@@ -766,8 +766,8 @@ function wysiwyg_form_system_theme_settings_alter(&$form, &$form_state, $form_id
  */
 function _wysiwyg_system_theme_settings_submit($form, &$form_state) {
   $theme = NULL;
-  if ($form_state['build_info']['form_id'] == 'system_theme_settings') {
-    $theme = $form_state['theme'];
+  if ($form_state['build_info']['form_id'] == 'system_theme_settings' && !empty($form_state['build_info']['args'])) {
+    $theme = $form_state['build_info']['args'][0];
   }
   if ($theme !== NULL) {
     $cached = cache_get('wysiwyg_css');
