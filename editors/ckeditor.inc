@@ -32,6 +32,8 @@ function wysiwyg_ckeditor_editor() {
       ),
     ),
     'install note callback' => 'wysiwyg_ckeditor_install_note',
+    'verified version range' => array('3.0', '4.6.1.580bcaf'),
+    'migrate settings callback' => 'wysiwyg_ckeditor_migrate_settings',
     'version callback' => 'wysiwyg_ckeditor_version',
     'themes callback' => 'wysiwyg_ckeditor_themes',
     'settings form callback' => 'wysiwyg_ckeditor_settings_form',
@@ -53,6 +55,90 @@ function wysiwyg_ckeditor_editor() {
     ),
   );
   return $editor;
+}
+
+/**
+ * Profile migration callback for CKEditor.
+ *
+ * Applies known changes to the editor settings as needed when the installed
+ * editor version is different from the one used to configure the profile.
+ * This fixes problems caused by settings, plugins or buttons being renamed,
+ * removed, or added between versions.
+ *
+ * Only changes needed up/down to and including the installed version from the
+ * profile version may be applied, in case the user did not install the latest
+ * supported version.
+ *
+ * @param $settings
+ *   The editor settings array as it was stored in the database.
+ * @param $editor
+ *   The editor definition from wysiwyg_get_editor().
+ * @param $profile_version
+ *   The editor version string from when the profile was last saved.
+ * @param $installed_version
+ *   The editor version currently installed on the system.
+ *
+ * @return
+ *   An editor version string telling Wysiwyg past which version the profile
+ *   could be migrated. If no changes were needed return TRUE.
+ *   Returning FALSE indicates migration failed and the profile is likely
+ *   unusable. Wysiwyg will recommend the user starts over with a new profile.
+ */
+function wysiwyg_ckeditor_migrate_settings(&$settings, $editor, $profile_version, $installed_version) {
+  $version_diff = version_compare($installed_version, $profile_version);
+  // Default to no changes needed.
+  $migrated_version = TRUE;
+  if ($version_diff === 1) {
+    // Upgrading, starting at the profile version going up.
+    // 3.x to 4.0.
+    if (version_compare($profile_version, '4.0', '<')
+      && version_compare($installed_version, '4.0', '>=')) {
+      // The default skin changed from "kama" to "moono".
+      if (isset($settings['skin']) && $settings['skin'] === 'kama') {
+        $settings['skin'] = 'moono';
+      }
+      $migrated_version = '4.0';
+    }
+    // Version 4.6.0.
+    if (version_compare($profile_version, '4.6.0', '<')
+      && version_compare($installed_version, '4.6.0', '>=')) {
+      // The default skin changed from "moono" to "moono-lisa".
+      if (isset($settings['skin']) && $settings['skin'] === 'moono') {
+        $settings['skin'] = 'moono-lisa';
+      }
+      $migrated_version = '4.6.0';
+    }
+  }
+  elseif ($version_diff === 0) {
+    // Same version. This function would never have been called.
+  }
+  // $version_diff === -1, an older version was installed.
+  else {
+    // Downgrading, starting at the profile version going down.
+    // 4.6.0 down to 4.x.
+    if (version_compare($profile_version, '4.6', '>=')
+      && version_compare($installed_version, '4.6', '<')) {
+      if (isset($settings['skin']) && $settings['skin'] === 'moono-lisa') {
+        $settings['skin'] = 'moono';
+      }
+      // Going down directly to 4.0 since no changes need to run anyway.
+      $migrated_version = '4.6';
+    }
+
+    // 4.x to 3.x.
+    if (version_compare($profile_version, '4.0', '>=')
+      && version_compare($installed_version, '4.0', '<')) {
+      // Change the default skin back "moono" to "kama".
+      if (isset($settings['skin']) && $settings['skin'] === 'moono') {
+        $settings['skin'] = 'kama';
+      }
+      $migrated_version = '4.0';
+    }
+  }
+  // Return the version which was possible to migrate to, or FALSE on fail. Must
+  // be within the verified range, but not necessarily match the exact version
+  // which is currently installed.
+  return $migrated_version;
 }
 
 /**

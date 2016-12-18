@@ -26,6 +26,7 @@ function wysiwyg_tinymce_editor() {
         'files' => array('tiny_mce_src.js'),
       ),
     ),
+    'verified version range' => array('3.0', '3.5.11'),
     'version callback' => 'wysiwyg_tinymce_version',
     'themes callback' => 'wysiwyg_tinymce_themes',
     'settings form callback' => 'wysiwyg_tinymce_settings_form',

@@ -15,24 +15,41 @@ function wysiwyg_profile_form($form_state, $profile) {
     'format' => 0,
     'editor' => '',
   );
-  if (empty($profile['settings'])) {
-    $profile['settings'] = array();
+  $profile = (object) $profile;
+  if (!$profile->settings) {
+    $profile->settings = array();
   }
-  $settings = &$profile['settings'];
+  $editor = wysiwyg_get_editor($profile->editor);
+  if (!$editor) {
+    // A missing library or unrecognized version, no edit link is shown so users
+    // should not get here.
+    drupal_goto('admin/settings/wysiwyg');
+  }
+  // Editor settings.
+  $settings = &$profile->settings;
   $settings += array(
-    'default' => TRUE,
-    'user_choose' => FALSE,
-    'show_toggle' => TRUE,
     'theme' => '',
     'language' => 'en',
     'buttons' => array(),
     'css_setting' => 'theme',
     'css_path' => NULL,
   );
-  $profile = (object) $profile;
 
+  if (!isset($profile->preferences)) {
+    $profile->preferences = array();
+  }
+
+  // Wysiwyg profile preferences, not used directly by the editor.
+  $preferences = &$profile->preferences;
+  $preferences += array(
+    'default' => TRUE,
+    'show_toggle' => TRUE,
+    'user_choose' => FALSE,
+    'version' => NULL,
+  );
+  $installed_version = $editor['installed version'];
+  $profile_version = $preferences['version'];
   $formats = filter_formats();
-  $editor = wysiwyg_get_editor($profile->editor);
   drupal_set_title(t('%editor profile for %format', array('%editor' => $editor['title'], '%format' => $formats[$profile->format]->name)));
 
   $form['format'] = array('#type' => 'value', '#value' => $profile->format);
@@ -47,28 +64,111 @@ function wysiwyg_profile_form($form_state, $profile) {
     '#group' => 'advanced',
   );
 
+  $form['basic']['info'] = array(
+    'editor_version' => array(
+      '#prefix' => '<p>',
+      '#value' => t('Installed editor library version: @installed_version', array('@installed_version' => (!empty($installed_version) ? $installed_version : t('Unknown')))),
+    ),
+    'profile_version' => array(
+      '#prefix' => '<br />',
+      '#value' => t('Version expected by profile: @profile_version', array('@profile_version' => (!empty($profile_version) ? $profile_version : t('Unknown')))),
+      '#suffix' => '</p>',
+    ),
+  );
+
+  $version_verified = $editor['installed version verified'];
+  $migrate_message = '';
+  $migrate_status = 'status';
+  if (!empty($editor['verified version range'])) {
+    $verified_range = $editor['verified version range'];
+    $form['basic']['info']['verified_range'] = array(
+      '#prefix' => '<p>',
+      '#value' => t('<a href="!url" target="_blank" title="Supported editor versions">Verified version range: @min_version to @max_version</a>', array(
+        '@min_version' => $verified_range[0],
+        '@max_version' => $verified_range[1],
+        '!url' => url('https://www.drupal.org/node/596966'),
+      )),
+      '#suffix' => '</p>',
+    );
+    if (!$version_verified) {
+      $migrate_status = 'warning';
+      $form['basic']['info']['editor_version']['#value'] .= ' <span class="warning">' . t('Untested!') . '</span>';
+    }
+    $version_diff = version_compare((empty($profile_version) ? $installed_version : $profile_version), $installed_version);
+    if ($version_diff !== 0) {
+      $migrate_message = t('The installed editor library version was changed from @profile_version to @installed_version since this profile was last saved.', array('@profile_version' => $profile_version, '@installed_version' => $installed_version));
+      // If the editor integration supports migration between versions, attempt
+      // it before widgets for settings are rendered.
+      if (isset($editor['migrate settings callback']) && function_exists($editor['migrate settings callback'])) {
+        // Get the version migrated to. MUST be in the verified version range or
+        // FALSE if no migration was possible.
+        $migrated_version = $editor['migrate settings callback']($settings, $editor, $profile_version, $installed_version);
+        $profile->changed = ($migrated_version !== TRUE && $migrated_version != $installed_version);
+        if ($migrated_version === FALSE) {
+          $migrate_message .= ' ' . t('Wysiwyg is not able to automatically adapt the profile to the installed editor version. It is recommended to start over with a new profile.');
+          $migrate_status = 'error';
+        }
+        // Migrations are likely not needed for every library update, as long
+        // as the installed version is within the verified range, we're good.
+        elseif ($version_verified) {
+          $migrate_message .= ' ' . ($profile->changed ? t('The profile was automatically adapted to better match the installed editor version, but please check all settings before proceeding.') : t('No known changes to the profile were needed, but please check all settings before proceeding'));
+        }
+        else {
+          $closest_version = ($version_diff === 1 ? $verified_range[0] : $verified_range[1]);
+          $migrate_message .= ' ' . t('Wysiwyg was only able to adapt the profile to editor version %version, any additional differences to the installed version will not be accounted for and the editor may not work as expected.', array('%version' => $closest_version));
+          $migrate_status = 'warning';
+        }
+      }
+    }
+  }
+  if (!$version_verified) {
+    $migrate_message .= (empty($migrate_message) ? '' : ' ') . t('The installed version has not been tested, the editor may not work as expected.');
+    $migrate_status = 'warning';
+  }
+  if (!empty($migrate_message)) {
+    $form['basic']['info'][''] = array(
+      '#prefix' => '<div class="messages ' . $migrate_status . '">',
+      '#value' => $migrate_message . ' ' . t('This message is shown until the profile is saved while a verified version is installed.'),
+      '#suffix' => '</div>',
+    );
+  }
+  if (empty($profile->new) && !empty($profile->changed)) {
+    drupal_set_message(t('All changes are stored temporarily. Click Save to make your changes permanent. Click Cancel to discard any changes.'), 'warning');
+  }
+
+  if (isset($profile->locked) && is_object($profile->locked)) {
+    $form['locked'] = array(
+      '#prefix' => '<div class="profile-locked messages warning">',
+      '#value' => t('This profile is being edited by user !user, and is therefore locked from editing by others. This lock is !age old. Click here to <a href="!break">break this lock</a>.', array('!user' => theme('username', user_load($profile->locked->uid)), '!age' => format_interval(time() - $profile->locked->updated), '!break' => url('admin/settings/wysiwyg/profile/' . $profile->format. '/break-lock'))),
+      '#suffix' => '</div>',
+    );
+  }
+
   $form['basic']['default'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enabled by default'),
-    '#default_value' => $settings['default'],
+    '#default_value' => $preferences['default'],
     '#return_value' => 1,
     '#description' => t('The default editor state for users having access to this profile. Users are able to override this state if the next option is enabled.'),
+    '#parents' => array('preferences', 'default'),
   );
 
   $form['basic']['user_choose'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow users to choose default'),
-    '#default_value' => $settings['user_choose'],
+    '#default_value' => $preferences['user_choose'],
     '#return_value' => 1,
     '#description' => t('If allowed, users will be able to choose their own editor default state in their user account settings.'),
+    '#parents' => array('preferences', 'user_choose'),
   );
 
   $form['basic']['show_toggle'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show <em>enable/disable rich text</em> toggle link'),
-    '#default_value' => $settings['show_toggle'],
+    '#default_value' => $preferences['show_toggle'],
     '#return_value' => 1,
     '#description' => t('Whether or not to show the <em>enable/disable rich text</em> toggle link below a textarea. If disabled, the user setting or global default is used (see above).'),
+    '#parents' => array('preferences', 'show_toggle'),
   );
 
   $form['basic']['theme'] = array(
@@ -85,7 +185,7 @@ function wysiwyg_profile_form($form_state, $profile) {
   require_once './includes/locale.inc';
   $predefined = _locale_get_predefined_list();
   foreach ($predefined as $key => $value) {
-    // Include native name in output, if possible
+    // Include native name in output, if possible.
     if (count($value) > 1) {
       $tname = t($value[0]);
       $predefined[$key] = ($tname == $value[1]) ? $tname : "$tname ($value[1])";
@@ -150,6 +250,32 @@ function wysiwyg_profile_form($form_state, $profile) {
     '#collapsed' => TRUE,
     '#group' => 'advanced',
   );
+
+  $form['appearance']['theme'] = array(
+    '#type' => 'hidden',
+    '#value' => $settings['theme'],
+  );
+
+  $form['appearance']['language'] = array(
+    '#type' => 'select',
+    '#title' => t('Interface language'),
+    '#default_value' => $settings['language'],
+  );
+  // @see _locale_prepare_predefined_list()
+  require_once $_SERVER['DOCUMENT_ROOT']  . '/includes/locale.inc';
+  $predefined = _locale_get_predefined_list();
+  foreach ($predefined as $key => $value) {
+    // Include native name in output, if possible.
+    if (count($value) > 1) {
+      $tname = t($value[0]);
+      $predefined[$key] = ($tname == $value[1]) ? $tname : "$tname ($value[1])";
+    }
+    else {
+      $predefined[$key] = t($value[0]);
+    }
+  }
+  asort($predefined);
+  $form['appearance']['language']['#options'] = $predefined;
 
   $form['output'] = array(
     '#type' => 'fieldset',
@@ -219,8 +345,10 @@ function wysiwyg_profile_form($form_state, $profile) {
     '#weight' => 100,
   );
   $form['cancel'] = array(
-    '#value' => l(t('Cancel'), 'admin/settings/wysiwyg'),
+    '#type' => 'submit',
+    '#value' => t('Cancel'),
     '#weight' => 110,
+    '#submit' => array('wysiwyg_profile_form_cancel_submit'),
   );
 
   // Supply contextual information for other callbacks and handlers.
@@ -260,22 +388,67 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
     // Store only enabled plugins.
     $values['buttons'] = array_filter($values['buttons']);
   }
-
   // Remove input format name.
   $format = $values['format'];
   $input_format = $values['input_format'];
-  $editor = $values['editor'];
+  $editor_name = $values['editor'];
   unset($values['format'], $values['input_format'], $values['editor']);
+  $preferences = $values['preferences'];
+  unset($values['preferences']);
+  $editor = wysiwyg_get_editor($editor_name);
+  $version = $editor['installed version'];
+  // If the installed version is newer than what is supported, drop the stored
+  // number so future upgrades know where to start. Ignore older versions.
+  if (!$editor['installed version verified'] && !empty($editor['verified version range'])) {
+    $version_range = $editor['verified version range'];
+    if (version_compare($version, $version_range[1], '>')) {
+      $version = $version_range[1];
+    }
+  }
+  $preferences['version'] = $version;
+  $values['_profile_preferences'] = $preferences;
 
   // Remove FAPI values.
   // @see system_settings_form_submit()
-  unset($values['submit'], $values['form_id'], $values['op'], $values['form_token'], $values['form_build_id']);
+  unset($values['submit'], $values['cancel'], $values['form_id'], $values['op'], $values['form_token'], $values['form_build_id'], $values['advanced__active_tab']);
 
   // Insert new profile data.
-  db_query("UPDATE {wysiwyg} SET settings = '%s' WHERE format = %d", serialize($values), $format);
+  db_query("UPDATE {wysiwyg} SET editor = '%s', settings = '%s' WHERE format = %d", $editor_name, serialize($values), $format);
+  if (!db_affected_rows()) {
+    db_query("INSERT INTO {wysiwyg} (format, editor, settings) VALUES (%d, '%s', '%s')", $format, $editor_name, serialize($values));
+  }
 
-  drupal_set_message(t('Wysiwyg profile for %format has been saved.', array('%format' => $input_format)));
+  // Clear the editing caches.
+  if (module_exists('ctools')) {
+    ctools_include('object-cache');
+    ctools_object_cache_clear('wysiwyg_profile', 'format' . $format);
+  }
+  else {
+    cache_clear_all('wysiwyg_profile:format' . $format, 'cache');
+  }
+  wysiwyg_profile_cache_clear();
 
+  $formats = filter_formats();
+  drupal_set_message(t('Wysiwyg profile for %format has been saved.', array('%format' => $formats[$format]->name)));
+
+  $form_state['redirect'] = 'admin/settings/wysiwyg';
+}
+
+/**
+ * Cancel submit handler for Wysiwyg profile form.
+ *
+ * @see wysiwyg_profile_form()
+ */
+function wysiwyg_profile_form_cancel_submit($form, &$form_state) {
+  $format = $form_state['values']['format'];
+  // Clear the editing caches.
+  if (module_exists('ctools')) {
+    ctools_include('object-cache');
+    ctools_object_cache_clear('wysiwyg_profile', 'format' . $format);
+  }
+  else {
+    cache_clear_all('wysiwyg_profile:format' . $format, 'cache');
+  }
   $form_state['redirect'] = 'admin/settings/wysiwyg';
 }
 
@@ -352,17 +525,33 @@ function wysiwyg_profile_overview() {
   $editors = wysiwyg_get_all_editors();
   $count = count($editors);
   $status = array();
-  $options = array('' => t('No editor'));
+  $editor_options = array();
 
   foreach ($editors as $name => $editor) {
     $status[$name] = array(
-      'severity' => (isset($editor['error']) ? REQUIREMENT_ERROR : ($editor['installed'] ? REQUIREMENT_OK : REQUIREMENT_INFO)),
-      'title' => t('<a href="!vendor-url">@editor</a> (<a href="!download-url">Download</a>)', array('!vendor-url' => $editor['vendor url'], '@editor' => $editor['title'], '!download-url' => $editor['download url'])),
-      'value' => (isset($editor['installed version']) ? $editor['installed version'] : t('Not installed.')),
+      'severity' => REQUIREMENT_INFO,
+      'title' => t('<a href="!vendor-url">@editor</a> (<a href="!download-url">Download</a>)',
+        array(
+          '!vendor-url' => $editor['vendor url'],
+          '@editor' => $editor['title'],
+          '!download-url' => $editor['download url'],
+        )
+      ),
+      'value' => t('Not installed.'),
       'description' => (isset($editor['error']) ? $editor['error'] : ''),
     );
-    if ($editor['installed']) {
-      $options[$name] = $editor['title'] . (isset($editor['installed version']) ? ' ' . $editor['installed version'] : '');
+    if (isset($editor['error'])) {
+      $severity = REQUIREMENT_ERROR;
+    }
+    elseif ($editor['installed']) {
+      $editor_options[$name] = check_plain($editor['title']) . ' ' . check_plain($editor['installed version']);
+      if (!$editor['installed version verified']) {
+        $status[$name]['severity'] = REQUIREMENT_WARNING;
+      }
+      else {
+        $status[$name]['severity'] = REQUIREMENT_OK;
+      }
+      $status[$name]['value'] = $editor['installed version'];
     }
     else {
       // Build on-site installation instructions.
@@ -383,6 +572,9 @@ function wysiwyg_profile_overview() {
       $status[$name]['description'] .= $instructions;
       $count--;
     }
+    if (!empty($editor['verified version range'])) {
+      $status[$name]['value'] .= '<br />(' . $editor['verified version range'][0] . ' - ' . $editor['verified version range'][1] . ')*';
+    }
     // In case there is an error, always show installation instructions.
     if (isset($editor['error'])) {
       $show_instructions = TRUE;
@@ -400,64 +592,104 @@ function wysiwyg_profile_overview() {
     '#weight' => 10,
   );
   $form['status']['report'] = array('#value' => theme('status_report', $status));
+  $form['status']['notes'] = array(
+    '#prefix' => '<div>',
+    '#value' => '* ' . t('The lowest and highest editor library version the current release of Wysiwyg module was last tested by the module maintainers.<br />Using a verified editor version is not a guaratee that any version of Wysiwyg module or an editor library is without problems. The verified version range only indicates a few manual tests have been performed on the first and last editor versions in the range together with the current Wysiwyg module version. <u>Always try the latest verified version before reporting bugs.</u> Unless otherwise noted; the testing was performed using the <strong>"default" or "full" package</strong> available for download from the editor\'s official website. Wysiwyg will <em>try</em> to use any recognized version above the verified version range, but proceed with caution. Editor versions lower than the verified range are <u>not supported at all</u>.<br /> More information about supported editor libraries and the verified versions can be found on the <a target="_blank" title="Supported editors" href="@project-url">wiki</a>.', array('@project-url' => url('https://www.drupal.org/node/596966'))),
+    '#suffix' => '</div>',
+  );
 
   if (!$count) {
     return $form;
   }
 
   $formats = filter_formats();
+  wysiwyg_profile_cache_clear();
   $profiles = wysiwyg_profile_load_all();
   $form['formats'] = array(
     '#type' => 'item',
     '#description' => t('To assign a different editor to a text format, click "delete" to remove the existing first.'),
     '#tree' => TRUE,
   );
-
-  $enable_save = FALSE;
+  $format_options = array();
   foreach ($formats as $id => $format) {
-    $form['formats'][$id]['name'] = array(
-      '#value' => check_plain($format->name),
-    );
-    // Only display editor selection for associated input formats to avoid
-    // confusion about disabled selection.
-    if (isset($profiles[$id]) && !empty($profiles[$id]->editor)) {
-      $editor_name = $profiles[$id]->editor;
-      $installed = !empty($editors[$editor_name]['installed']);
-      $form['formats'][$id]['editor'] = array(
-        '#wysiwyg-editor-name' => $editor_name,
+    if (($profile = (!empty($profiles[$id]) ? $profiles[$id] : FALSE))) {
+      $form['formats'][$id]['name'] = array(
+        '#value' => check_plain($format->name),
       );
+      $editor_name = $profile->editor;
+      $installed = !empty($editors[$editor_name]['installed']);
+      $profile_version = (isset($profile->preferences['version']) ? $profile->preferences['version'] : NULL);
+      $editor_message = '';
       if ($installed) {
-        $form['formats'][$id]['editor']['#value'] = $options[$editor_name];
+        if ($profile_version != $editors[$editor_name]['installed version']) {
+          $editor_message = '<div class="messages warning">' . check_plain($editors[$editor_name]['title']) . ' (' . t('Expected version: %profile_version but found %installed_version.', array('%profile_version' => $profile_version, '%installed_version' => $editors[$editor_name]['installed version'])) . ')</div>';
+        }
+        elseif (!$editors[$editor_name]['installed version verified']) {
+          $editor_message = '<div class="messages warning">' . check_plain($editors[$editor_name]['title']) . ' (' . t('Version %installed_version is not verified', array('%installed_version' => $editors[$editor_name]['installed version'])) . ')</div>';
+        }
+        else {
+          $editor_message = t('@library @profile_version', array('@library' => $editors[$editor_name]['title'], '@profile_version' => $profile_version));
+        }
       }
       else {
-        drupal_set_message(t('Missing %editor library for %format format. Re-install the %editor library or delete the editor profile.', array(
-          '%editor' => $editors[$editor_name]['title'],
-          '%format' => $format->name,
-        )), 'warning');
+        $editor_message = '<div class="messages error">' . t('Unable to find @library. Expected version: %profile_version. Reinstall the library to edit this profile.', array('@library' => $editors[$editor_name]['title'], '%profile_version' => $profile_version)) . '</div>';
       }
-    }
-    else {
-      $form['formats'][$id]['editor'] = array(
-        '#type' => 'select',
-        '#default_value' => '',
-        '#options' => $options,
-      );
-      $enable_save = TRUE;
-    }
-    if (isset($profiles[$id]) && !empty($profiles[$id]->editor)) {
-      $form['formats'][$id]['edit'] = array(
-        '#value' => l(t('Edit'), "admin/settings/wysiwyg/profile/$id/edit"),
-      );
+      $form['formats'][$id]['editor']['#value'] = $editor_message;
+      if ($editors[$profile->editor]['installed']) {
+        $form['formats'][$id]['edit'] = array(
+          '#value' => l(t('Edit'), "admin/settings/wysiwyg/profile/$id"),
+        );
+      }
       $form['formats'][$id]['delete'] = array(
         '#value' => l(t('Delete'), "admin/settings/wysiwyg/profile/$id/delete"),
       );
     }
+    else {
+      $format_options[$id] = $format->name;
+    }
   }
 
-  // Submitting the form when no editors can be selected causes errors.
-  if ($enable_save) {
-    $form['submit'] = array('#type' => 'submit', '#value' => t('Save'));
+  $form['formats']['_new_profile']['name'] = array(
+    '#prefix' => '<div class="label-input"><div class="add-new-placeholder">' . t('Assign an editor profile to a format') . '</div>',
+    '#suffix' => '</div>',
+  );
+  if (!empty($format_options)) {
+    $form['formats']['_new_profile']['name'] += array(
+      '#type' => 'select',
+      '#title' => t('Select a format'),
+      '#title_display' => 'invisible',
+      '#empty_option' => t('- Select a format -'),
+      '#default_value' => '',
+      '#options' => $format_options,
+    );
   }
+  else {
+    $form['formats']['_new_profile']['name'] += array(
+      '#value' => t('All formats have been assigned an editor profile'),
+    );
+  }
+  if (!empty($editor_options)) {
+    $form['formats']['_new_profile']['editor'] = array(
+      '#type' => 'select',
+      '#title' => t('Select an editor'),
+      '#title_display' => 'invisible',
+      '#empty_option' => t('- Select an editor -'),
+      '#default_value' => '',
+      '#options' => $editor_options,
+    );
+  }
+  else {
+    $form['formats']['_new_profile']['editor'] = array(
+      '#value' => t('No editors installed.'),
+    );
+  }
+  $form['formats']['_new_profile']['editor']['#prefix'] = '<div class="add-new-placeholder">&nbsp;</div>';
+  $form['formats']['_new_profile']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create profile'),
+    '#prefix' => '<div class="add-new-placeholder">&nbsp;</div>',
+  );
+
   return $form;
 }
 
@@ -468,44 +700,98 @@ function theme_wysiwyg_profile_overview($form) {
   if (!isset($form['formats'])) {
     return;
   }
-  $editors = wysiwyg_get_all_editors();
   $output = '';
   $header = array(t('Input format'), t('Editor'), array('data' => t('Operations'), 'colspan' => 2));
-  $rows = array();
-  foreach (element_children($form['formats']) as $item) {
-    $format = &$form['formats'][$item];
-    $row = array(
+  $table_rows = array();
+  foreach (element_children($form['formats']) as $form_row_name) {
+    $form_row = &$form['formats'][$form_row_name];
+    $editor_column_output = drupal_render($form_row['editor']);
+    $table_row = array(
       'data' => array(
-        drupal_render($format['name']),
-        drupal_render($format['editor']),
-        isset($format['edit']) ? drupal_render($format['edit']) : '',
-        isset($format['delete']) ? drupal_render($format['delete']) : '',
+        drupal_render($form_row['name']),
+        $editor_column_output,
       ),
     );
-    if (empty($row['data'][1])) {
-      $row['data'][1] = array(
-        'data' => t('Missing library: @library', array('@library' => $editors[$format['editor']['#wysiwyg-editor-name']]['title'])),
-        'class' => 'error',
+    if ($form_row_name == '_new_profile') {
+      // This is the "create profile" row.
+      $table_row['data'][] = array(
+        'data' => drupal_render($form_row['submit']),
+        'colspan' => 2,
       );
-      $row['class'] = 'error';
     }
-    $rows[] = $row;
+    else {
+      $table_row['data'][] = isset($form_row['edit']) ? drupal_render($form_row['edit']) : '';
+      $table_row['data'][] = isset($form_row['delete']) ? drupal_render($form_row['delete']) : '';
+    };
+    $table_rows[] = $table_row;
   }
-  $form['formats']['table']['#value'] = theme('table', $header, $rows);
+  $form['formats']['table']['#value'] = theme('table', $header, $table_rows, array(), t('Wysiwyg profiles'));
   $output .= drupal_render($form);
   return $output;
 }
 
 /**
- * Submit callback for Wysiwyg profile overview form.
+ * Validate callback for Wysiwyg profile overview form.
+ *
+ * @see wysiwyg_profile_overview()
  */
-function wysiwyg_profile_overview_submit($form, &$form_state) {
-  foreach ($form_state['values']['formats'] as $format => $values) {
-    db_query("UPDATE {wysiwyg} SET editor = '%s' WHERE format = %d", $values['editor'], $format);
-    if (!db_affected_rows() && !empty($values['editor'])) {
-      db_query("INSERT INTO {wysiwyg} (format, editor) VALUES (%d, '%s')", $format, $values['editor']);
+function wysiwyg_profile_overview_validate($form, &$form_state) {
+  $new = $form_state['values']['formats']['_new_profile'];
+  if (empty($new['name'])) {
+    form_set_error('formats][new][name', t('You must select a format.'));
+  }
+  else {
+    $profile = wysiwyg_profile_load($new['name']);
+    if (!empty($profile)) {
+      form_set_error('formats][new][name', t('An editor is already assigned to this format.'));
     }
   }
+  if (empty($new['editor'])) {
+    form_set_error('formats][new][editor', t('You must select an editor.'));
+  }
+  else {
+    $editor = wysiwyg_get_editor($form_state['values']['formats']['_new_profile']['editor']);
+    if (empty($editor)) {
+      form_set_error('formats][new][editor', t('The selected editor was not found.'));
+    }
+  }
+}
+
+/**
+ * Submit callback for Wysiwyg profile overview form.
+ *
+ * @see wysiwyg_profile_overview()
+ */
+function wysiwyg_profile_overview_submit($form, &$form_state) {
+  $editor = wysiwyg_get_editor($form_state['values']['formats']['_new_profile']['editor']);
+  $format = $form_state['values']['formats']['_new_profile']['name'];
+
+  $profile = array(
+    'name' => 'format' . $format,
+    'new' => TRUE,
+    'editing' => TRUE,
+    'format' => $format,
+    'editor' => $editor['name'],
+    'settings' => array(),
+    'preferences' => array(
+      'default' => TRUE,
+      'show_toggle' => TRUE,
+      'user_choose' => FALSE,
+      'version' => $editor['installed version'],
+    ),
+  );
+  $profile = (object) $profile;
+
+  // Cache the profile for editing.
+  wysiwyg_ui_profile_cache_set($profile);
+  // If there is a destination query, ensure we still redirect the user to the
+  // edit view page, and then redirect the user to the destination.
+  $destination = array();
+  if (isset($_GET['destination'])) {
+    $destination = drupal_get_destination();
+    unset($_GET['destination']);
+  }
+  $form_state['redirect'] = array('admin/settings/wysiwyg/profile/' . $format . '/edit', array('query' => $destination));
 }
 
 /**
@@ -514,7 +800,7 @@ function wysiwyg_profile_overview_submit($form, &$form_state) {
 function wysiwyg_profile_delete_confirm(&$form_state, $profile) {
   $formats = filter_formats();
   $format = $formats[$profile->format];
-  $form['format'] = array('#type' => 'value', '#value' => $format);
+  $form['format'] = array('#type' => 'value', '#value' => $profile->format);
   return confirm_form(
     $form,
     t('Are you sure you want to remove the profile for %name?', array('%name' => $format->name)),
@@ -529,16 +815,50 @@ function wysiwyg_profile_delete_confirm(&$form_state, $profile) {
  * @see wysiwyg_profile_delete_confirm()
  */
 function wysiwyg_profile_delete_confirm_submit($form, &$form_state) {
-  $format = $form_state['values']['format'];
+  $formats = filter_formats();
+  $format = $formats[$form_state['values']['format']];
   wysiwyg_profile_delete($format->format);
   drupal_set_message(t('Wysiwyg profile for %name has been deleted.', array('%name' => $format->name)));
   $form_state['redirect'] = 'admin/settings/wysiwyg';
 }
 
 /**
- * Remove a profile from the database.
+ * Break lock confirmation form.
  */
-function wysiwyg_profile_delete($format) {
-  db_query("DELETE FROM {wysiwyg} WHERE format = %d", $format);
+function wysiwyg_profile_break_lock_confirm(&$form_state, $profile) {
+  $formats = filter_formats();
+  $format = $formats[$profile->format];
+  $form['format'] = array('#type' => 'value', '#value' => $profile->format);
+  if (empty($profile->locked)) {
+    $form['message']['#value'] = t('There is no lock on the profile for %name to break.', array('%name' => $format->name));
+    return $form;
+  }
+  $account = user_load($profile->locked->uid);
+  return confirm_form(
+    $form,
+    t('Are you sure you want to break the lock on the profile for %name?', array('%name' => $format->name)),
+    'admin/settings/wysiwyg',
+    t('By breaking this lock, any unsaved changes made by !user will be lost!.', array('!user' => theme('username', $account))),
+    t('Break lock'), t('Cancel')
+  );
 }
 
+/**
+ * Submit handler to break_lock a profile.
+ */
+function wysiwyg_profile_break_lock_confirm_submit(&$form, &$form_state) {
+  $format = $form_state['values']['format'];
+  // Only the CTools cache handles locks.
+  if (module_exists('ctools')) {
+    ctools_include('object-cache');
+    ctools_object_cache_clear_all('wysiwyg_profile', 'format' . $format);
+  }
+  if (($profile = wysiwyg_profile_load($format))) {
+    $form_state['redirect'] = 'admin/settings/wysiwyg/profile/' . $format . '/edit';
+    drupal_set_message(t('The lock has been broken and you may now edit this profile.'));
+  }
+  else {
+    $form_state['redirect'] = 'admin/settings/wysiwyg/profile';
+    drupal_set_message(t('The lock has been broken and you may now create a new profile.'));
+  }
+}

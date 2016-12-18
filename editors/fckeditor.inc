@@ -19,6 +19,7 @@ function wysiwyg_fckeditor_editor() {
         'files' => array('fckeditor.js'),
       ),
     ),
+    'verified version range' => array('2.6.0', '2.6.11'),
     'version callback' => 'wysiwyg_fckeditor_version',
     'themes callback' => 'wysiwyg_fckeditor_themes',
     'settings form callback' => 'wysiwyg_fckeditor_settings_form',

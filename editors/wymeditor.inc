@@ -28,6 +28,7 @@ function wysiwyg_wymeditor_editor() {
         'files' => array('jquery.wymeditor.js'),
       ),
     ),
+    'verified version range' => array('0.5', '1.0.0b5'),
     'version callback' => 'wysiwyg_wymeditor_version',
     'themes callback' => 'wysiwyg_wymeditor_themes',
     'settings form callback' => 'wysiwyg_wymeditor_settings_form',

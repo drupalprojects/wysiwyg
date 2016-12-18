@@ -454,3 +454,42 @@ function wysiwyg_update_6204() {
   );
   return $ret;
 }
+
+/**
+ * Remove empty editor profiles and update existing profiles.
+ */
+function wysiwyg_update_6205() {
+  // Remove unused profiles.
+  db_query("DELETE FROM {wysiwyg} WHERE editor = ''");
+  $result = db_query('SELECT format, editor, settings FROM {wysiwyg}');
+  while ($profile = db_fetch_object($result)) {
+    // Move profile state to its own section.
+    $settings = unserialize($profile->settings);
+    $editor = wysiwyg_get_editor($profile->editor);
+    if (!empty($settings['_profile_preferences'])) {
+      // Skip in case of re-run.
+      continue;
+    }
+    $preferences = array(
+      'default' => $settings['default'],
+      'show_toggle' => $settings['show_toggle'],
+      'user_choose' => $settings['user_choose'],
+      'version' => NULL,
+    );
+    unset($settings['default'], $settings['show_toggle'], $settings['user_choose']);
+    if (!empty($settings['library'])) {
+      $prefereces['library'] = $settings['library'];
+      unset($settings['library']);
+    }
+    if ($editor['installed']) {
+      $preferences['version'] = $editor['installed version'];
+    }
+    $settings['_profile_preferences'] = $preferences;
+    db_query("UPDATE {wysiwyg} SET settings='%s' WHERE format = %d", array(serialize($settings), $profile->format));
+  }
+  $ret[] = array(
+    'success' => TRUE,
+    'query' => 'Editor profiles have been updated.',
+  );
+  return $ret;
+}
