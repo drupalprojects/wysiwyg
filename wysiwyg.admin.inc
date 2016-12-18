@@ -189,6 +189,30 @@ function wysiwyg_profile_form($form_state, $profile) {
     $form['#pre_render'][] = 'vertical_tabs_form_pre_render';
   }
 
+  $form['settings_notes'] = array(
+    '#type' => 'fieldset',
+    '#weight' => 55,
+    '#title' => '&star;&nbsp;' . t('Settings notes'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['settings_notes']['json']['#value'] = '<div>' . t('Some settings use <a href="!json_url" title="JavaScript Object Notation">JSON</a> syntax to allow complex data structures. Compared to the JSON specification, Wysiwyg module is a bit more flexible with which syntax it accepts to make it easier to copy sample configurations from editor documentation. JSON requires properties and String values to be enclosed in double quotes. Wysiwyg will try to add missing double quotes and replace single quotes, but it only handles simple cases. JSON syntax only allows Objects, Arrays, Strings, Numbers, and Booleans as values, but Wysiwyg can recognize and convert some objects with a specific structures to native JavaScript types otherwise not accepted by JSON.' . '</div>',
+      array(
+        '!json_url' => url('https://en.wikipedia.org/wiki/JSON'),
+      )
+    );
+  $form['settings_notes']['json_examples'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Serializing native types'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['settings_notes']['json_examples']['function']['#value'] = '<div>' . t('Function reference')
+    . ':<br /><pre>{' . "\n  " . '"drupalWysiwygType" : "callback",' . "\n  " . '"name" : "name_of_callback_or_method",' . "\n  " . '"context" : "global.context.object"' . "\n}</pre></div>";
+  $form['settings_notes']['json_examples']['regexp']['#value'] = '<div>' . t('RegExp')
+    . ':<br /><pre>{' . "\n  " . '"drupalWysiwygType" : "regexp",' . "\n  " . '"regexp" : "\w+\d$",' . "\n  " . '"modifiers" : "gi"' . "\n}</pre></div>";
+  $form['settings_notes']['json_examples']['modules']['#value'] = '<p>' . t('Modules implementing hooks may use the helper functions starting with <em>wysiwyg_wrap_js_*</em> to create these objects, see the file <em>wysiwyg.api.php</em>.') . '</p>';
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -253,6 +277,36 @@ function wysiwyg_profile_form_submit($form, &$form_state) {
   drupal_set_message(t('Wysiwyg profile for %format has been saved.', array('%format' => $input_format)));
 
   $form_state['redirect'] = 'admin/settings/wysiwyg';
+}
+
+/**
+ * Validation helper for JSON based elements.
+ *
+ * Ensures double quotes are used around property names and values.
+ *
+ * @param $element
+ *   The form element with a '#value' property to validate.
+ * @param $form_state
+ *   The form state to update with the processed value.
+ */
+function _wysiwyg_settings_form_validate_json_object($element, &$form_state) {
+  $ret = array(
+    'valid' => TRUE,
+  );
+  if (!empty($element['#value'])) {
+    $value = $element['#value'];
+    // Ensure double quotes are used around property names.
+    $value = preg_replace('/(?<=^|,|\n|{)(\s*)(\'?)(\w+)\2\s*:/', '$1"$3":', $value);
+    // Ensure double quotes are used around string values.
+    $value = preg_replace('/(?<=^|,|\n|{)\s*"(\w+)"\s*:\s*\'(.*?)\'\s*(?=$|\n|,|})/', '"$1":"$2"', $value);
+    $ret['processed value'] = $value;
+    form_set_value($element, $value, $form_state);
+    $ret['valid'] = (json_decode($value) !== NULL);
+    if (!$ret['valid']) {
+      $ret['message'] = t('The value needs to be a valid JSON object.') . '&nbsp;&star;';
+    }
+  }
+  return $ret;
 }
 
 /**
