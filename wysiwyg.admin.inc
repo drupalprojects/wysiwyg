@@ -433,7 +433,7 @@ function theme_wysiwyg_profile_overview($form) {
         'data' => t('Missing library: @library', array('@library' => $editors[$format['editor']['#wysiwyg-editor-name']]['title'])),
         'class' => 'error',
       );
-      $row['class'] = array('error');
+      $row['class'] = 'error';
     }
     $rows[] = $row;
   }
