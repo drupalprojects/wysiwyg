@@ -40,6 +40,8 @@ function wysiwyg_yui_editor() {
         ),
       ),
     ),
+    'install note callback' => 'wysiwyg_yui_install_note',
+    'verified version range' => array('2.7.0', '2.9.0'),
     'version callback' => 'wysiwyg_yui_version',
     'themes callback' => 'wysiwyg_yui_themes',
     'settings form callback' => 'wysiwyg_yui_settings_form',
@@ -61,6 +63,14 @@ function wysiwyg_yui_editor() {
     ),
   );
   return $editor;
+}
+
+/**
+ * Return an install note.
+ */
+function wysiwyg_yui_install_note() {
+  $output = '<p class="warning">' . t('YUI 3 is not supported because it does not contain a complete editor.') . '</p>';
+  return $output;
 }
 
 /**

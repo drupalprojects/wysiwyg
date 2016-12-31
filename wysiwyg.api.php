@@ -206,6 +206,19 @@ function hook_INCLUDE_editor() {
     // (optional) A callback to invoke to return additional notes for installing
     // the editor library in the administrative list/overview.
     'install note callback' => 'wysiwyg_ckeditor_install_note',
+    // The minimum and maximum versions the implemetation has been tested with.
+    // Users will be notified if installing a version not within this range.
+    'verified version range' => array('1.2.3', '3.4.5'),
+    // (optional) A callback to perform migrations of the settings stored in a
+    // profile when a library change has been detected. Takes a reference to a
+    // settings object, the processed editor definition, the profile version and
+    // the installed library version. Migrations should be performed in the
+    // order changes were introduced by library versions, and the last version
+    // migrated to should be returned, or FALSE if no migration was possible.
+    // The returned version should be less than or equal to the highest version
+    // ( and >= the lowest version) defined in 'verified version range' and
+    // be as close as possible to, without passing, the installed version.
+    'migrate settings callback' => 'wysiwyg_ckeditor_migrate_settings',
     // A callback to determine the library's version.
     'version callback' => 'wysiwyg_ckeditor_version',
     // A callback to return available themes/skins for the editor library.
