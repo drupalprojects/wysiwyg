@@ -119,7 +119,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
     if (typeof Drupal.wysiwyg.plugins[plugin] != 'object') {
       return;
     }
-    tinymce.create('tinymce.plugins.' + plugin, {
+    tinymce.create('tinymce.plugins.drupal_' + plugin, {
       /**
        * Initialize the plugin, executed after the plugin has been created.
        *
@@ -130,7 +130,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
        */
       init: function(ed, url) {
         // Register an editor command for this plugin, invoked by the plugin's button.
-        ed.addCommand(plugin, function() {
+        ed.addCommand('drupal_' + plugin, function() {
           if (typeof Drupal.wysiwyg.plugins[plugin].invoke == 'function') {
             var data = { format: 'html', node: ed.selection.getNode(), content: ed.selection.getContent() };
             // TinyMCE creates a completely new instance for fullscreen mode.
@@ -140,9 +140,9 @@ Drupal.wysiwyg.editor.instance.tinymce = {
         });
 
         // Register the plugin button.
-        ed.addButton(plugin, {
+        ed.addButton('drupal_' + plugin, {
           title : pluginSettings.title,
-          cmd : plugin,
+          cmd : 'drupal_' + plugin,
           image : pluginSettings.icon
         });
 
@@ -190,7 +190,7 @@ Drupal.wysiwyg.editor.instance.tinymce = {
     });
 
     // Register plugin.
-    tinymce.PluginManager.add(plugin, tinymce.plugins[plugin]);
+    tinymce.PluginManager.add('drupal_' + plugin, tinymce.plugins['drupal_' + plugin]);
   },
 
   openDialog: function(dialog, params) {
