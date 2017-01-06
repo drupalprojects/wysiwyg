@@ -79,8 +79,14 @@ function wysiwyg_features_rebuild($module) {
   if ($defaults = features_get_default('wysiwyg', $module)) {
     foreach ($defaults as $profile) {
       if (empty($profile['settings']['_profile_preferences'])) {
-        $settings = &$profile['settings'];
-        // Importing an older profile, move state to its own section.
+        if (!empty($profile['preferences'])) {
+          $settings =  &$profile['preferences'];
+        }
+        else {
+          // Importing an older profile, move state to its own section.
+          $settings =  &$profile['settings'];
+        }
+
         $preferences = array(
           'add_to_summaries' => $settings['add_to_summaries'],
           'default' => $settings['default'],
@@ -89,16 +95,20 @@ function wysiwyg_features_rebuild($module) {
           'version' => NULL,
         );
         unset($settings['add_to_summaries'], $settings['default'], $settings['show_toggle'], $settings['user_choose']);
+
         if (!empty($settings['library'])) {
-          $prefereces['library'] = $settings['library'];
+          $preferences['library'] = $settings['library'];
           unset($settings['library']);
         }
-        $editor = wysiwyg_get_editor($profile->editor);
-        if ($editor['installed']) {
+
+        $editor = wysiwyg_get_editor($profile['editor']);
+        if (!empty($editor['installed'])) {
           $preferences['version'] = $editor['installed version'];
         }
-        $settings['_profile_preferences'] = $preferences;
+
+        $profile['settings']['_profile_preferences'] = $preferences;
       }
+
       db_merge('wysiwyg')
         ->key(array('format' => $profile['format']))
         ->fields(array(
