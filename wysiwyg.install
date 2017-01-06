@@ -462,6 +462,7 @@ function wysiwyg_update_6205() {
   // Remove unused profiles.
   db_query("DELETE FROM {wysiwyg} WHERE editor = ''");
   $result = db_query('SELECT format, editor, settings FROM {wysiwyg}');
+  drupal_load('module', 'wysiwyg');
   while ($profile = db_fetch_object($result)) {
     // Move profile state to its own section.
     $settings = unserialize($profile->settings);
