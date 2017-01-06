@@ -54,7 +54,7 @@ function wysiwyg_features_export_render($module, $data, $export = NULL) {
     if ($profile = wysiwyg_get_profile($name)) {
       $profile_export = features_var_export($profile, '  ');
       $profile_identifier = features_var_export($profile->format);
-      $code[] = "  // Exported profile: {$profile->format}";
+      $code[] = "  // Exported profile: {$profile->format}.";
       $code[] = "  \$profiles[{$profile_identifier}] = {$profile_export};";
       $code[] = "";
     }
