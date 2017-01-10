@@ -771,13 +771,13 @@ function wysiwyg_get_css($theme = NULL) {
  */
 function wysiwyg_themes_enabled($theme_list) {
   $cached = cache_get('wysiwyg_css');
-  foreach ($theme_list as $theme) {
-    if ($cached && !empty($cached->data)) {
-      $css = $cached->data;
+  if ($cached && !empty($cached->data)) {
+    $css = $cached->data;
+    foreach ($theme_list as $theme) {
       unset($css[$theme]);
     }
+    cache_set('wysiwyg_css', $css);
   }
-  cache_set('wysiwyg_css', $css);
 }
 
 /**
