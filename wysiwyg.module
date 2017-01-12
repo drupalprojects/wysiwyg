@@ -148,11 +148,11 @@ function wysiwyg_admin_menu_map() {
   }
 
   $profiles = wysiwyg_profile_load_all();
-  $map['admin/config/content/wysiwyg/profile/%wysiwyg_profile'] = array(
+  $map['admin/config/content/wysiwyg/profile/%wysiwyg_ui_profile_cache'] = array(
     'parent' => 'admin/config/content/wysiwyg',
     'hide' => 'admin/config/content/wysiwyg/list',
     'arguments' => array(
-      array('%wysiwyg_profile' => array_keys($profiles)),
+      array('%wysiwyg_ui_profile_cache' => array_keys($profiles)),
     ),
   );
   return $map;
