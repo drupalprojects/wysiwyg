@@ -224,7 +224,18 @@ Drupal.wysiwyg.editor.instance.ckeditor = {
                   data.node = data.node.$;
                 }
                 if (selection.getType() == CKEDITOR.SELECTION_TEXT) {
-                  data.content = selection.getSelectedText();
+                  if (selection.getSelectedText) {
+                    data.content = selection.getSelectedText();
+                  }
+                  else {
+                    // Pre v3.6.1.
+                    if (CKEDITOR.env.ie) {
+                      data.content = selection.getNative().createRange().text;
+                    }
+                    else {
+                      data.content = selection.getNative().toString();
+                    }
+                  }
                 }
                 else if (data.node) {
                   // content is supposed to contain the "outerHTML".
