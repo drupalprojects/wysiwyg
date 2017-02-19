@@ -80,21 +80,27 @@ function wysiwyg_features_rebuild($module) {
     foreach ($defaults as $profile) {
       if (empty($profile['settings']['_profile_preferences'])) {
         if (!empty($profile['preferences'])) {
-          $settings =  &$profile['preferences'];
+          $settings = &$profile['preferences'];
         }
         else {
           // Importing an older profile, move state to its own section.
-          $settings =  &$profile['settings'];
+          $settings = &$profile['settings'];
         }
 
         $preferences = array(
-          'add_to_summaries' => $settings['add_to_summaries'],
+          'add_to_summaries' => (!empty($settings['add_to_summaries']) ? $settings['add_to_summaries'] : FALSE),
           'default' => $settings['default'],
           'show_toggle' => $settings['show_toggle'],
           'user_choose' => $settings['user_choose'],
-          'version' => NULL,
+          'version' => (!empty($settings['version']) ? $settings['version'] : NULL),
         );
-        unset($settings['add_to_summaries'], $settings['default'], $settings['show_toggle'], $settings['user_choose']);
+        unset($settings['add_to_summaries'],
+          $settings['default'],
+          $settings['show_toggle'],
+          $settings['user_choose'],
+          $settings['version'],
+          $profile['preferences']
+        );
 
         if (!empty($settings['library'])) {
           $preferences['library'] = $settings['library'];
@@ -102,7 +108,7 @@ function wysiwyg_features_rebuild($module) {
         }
 
         $editor = wysiwyg_get_editor($profile['editor']);
-        if (!empty($editor['installed'])) {
+        if (empty($preferences['version']) && !empty($editor['installed'])) {
           $preferences['version'] = $editor['installed version'];
         }
 
@@ -126,4 +132,3 @@ function wysiwyg_features_rebuild($module) {
     wysiwyg_profile_cache_clear();
   }
 }
-
