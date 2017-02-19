@@ -27,7 +27,7 @@ function wysiwyg_tinymce_editor() {
       ),
     ),
     'version callback' => 'wysiwyg_tinymce_version',
-    'verified version range' => array('3.3.9.2', '4.5.1'),
+    'verified version range' => array('3.3.9.2', '4.5.3'),
     'themes callback' => 'wysiwyg_tinymce_themes',
     'settings form callback' => 'wysiwyg_tinymce_settings_form',
     'init callback' => 'wysiwyg_tinymce_init',
@@ -995,11 +995,29 @@ function _wysiwyg_tinymce_migrate_settings(&$settings, $editor, $profile_version
       $settings['buttons'] = $fixed_buttons;
       $migrated_version = '4.0.0';
     }
+    if (version_compare($profile_version, '4.5.0', '<') && version_compare($installed_version, '4.5.0', '>=')) {
+      // The list buttons now require the lists plugin.
+      if (!empty($settings['buttons']['default']['bullist'])) {
+        $settings['buttons']['lists']['bullist'] = 1;
+      }
+      if (!empty($settings['buttons']['default']['numlist'])) {
+        $settings['buttons']['lists']['numlist'] = 1;
+      }
+      unset($settings['buttons']['default']['bullist'], $settings['buttons']['default']['numlist']);
+      $migrated_version = '4.5.0';
+    }
   }
   else {
     // Downgrading, starting at the profile version going down.
     if (version_compare($profile_version, '4.5.0', '>=') && version_compare($installed_version, '4.5.0', '<')) {
       unset($settings['buttons']['toc']);
+      if (!empty($settings['buttons']['lists']['bullist'])) {
+        $settings['buttons']['default']['bullist'] = 1;
+      }
+      if (!empty($settings['buttons']['lists']['numlist'])) {
+        $settings['buttons']['default']['numlist'] = 1;
+      }
+      unset($settings['buttons']['lists']);
       $migrated_version = '4.5.0';
     }
     if (version_compare($profile_version, '4.3.0', '>=') && version_compare($installed_version, '4.3.0', '<')) {
@@ -1371,6 +1389,9 @@ function _wysiwyg_tinymce_plugins($editor) {
         'buttons' => array('toc' => t('Table of Contents')),
         'url' => _wysiwyg_tinymce_get_plugin_url('toc'),
       );
+      // The list buttons now require the lists plugin.
+      $plugins['lists']['buttons'] = array('bullist' => t('Unordered list'), 'numlist' => t('Ordered list'));
+      unset($plugins['default']['buttons']['bullist'], $plugins['default']['buttons']['numlist']);
     }
   }
 
