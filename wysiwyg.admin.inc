@@ -89,10 +89,10 @@ function wysiwyg_profile_form($form, &$form_state, $profile) {
       // If the editor integration supports migration between versions, attempt
       // it before widgets for settings are rendered.
       if (isset($editor['migrate settings callback']) && function_exists($editor['migrate settings callback'])) {
-        // Get the version migrated to. MUST be in the verified version range or
-        // FALSE if no migration was possible.
+        // Get the version migrated to. MUST be in the verified version range,
+        // FALSE if no migration was possible, or TRUE if no change needed.
         $migrated_version = $editor['migrate settings callback']($settings, $editor, $profile_version, $installed_version);
-        $profile->changed = ($migrated_version !== TRUE && $migrated_version != $installed_version);
+        $profile->changed = ($migrated_version !== TRUE && $migrated_version != $profile_version);
         if ($migrated_version === FALSE) {
           $migrate_message .= ' ' . t('Wysiwyg is not able to automatically adapt the profile to the installed editor version. It is recommended to start over with a new profile.');
           $migrate_status = 'error';
