@@ -52,9 +52,10 @@ function wysiwyg_features_export_render($module, $data, $export = NULL) {
 
   foreach ($data as $name) {
     if ($profile = wysiwyg_get_profile($name)) {
+      $profile = (array) $profile;
       $profile_export = features_var_export($profile, '  ');
-      $profile_identifier = features_var_export($profile->format);
-      $code[] = "  // Exported profile: {$profile->format}.";
+      $profile_identifier = features_var_export($profile['format']);
+      $code[] = "  // Exported profile: {$profile['format']}.";
       $code[] = "  \$profiles[{$profile_identifier}] = {$profile_export};";
       $code[] = "";
     }
@@ -78,6 +79,7 @@ function wysiwyg_features_revert($module) {
 function wysiwyg_features_rebuild($module) {
   if ($defaults = features_get_default('wysiwyg', $module)) {
     foreach ($defaults as $profile) {
+      $profile = is_object($profile) ? (array) $profile : $profile;
       if (empty($profile['settings']['_profile_preferences'])) {
         if (!empty($profile['preferences'])) {
           $settings = &$profile['preferences'];
