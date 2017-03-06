@@ -427,3 +427,25 @@ function wysiwyg_update_7204() {
   }
   wysiwyg_profile_cache_clear();
 }
+
+/**
+ * Check for profiles without add_to_summaries settings.
+ */
+function wysiwyg_update_7205() {
+  $query = db_select('wysiwyg', 'w');
+  $query->join('filter_format', 'f', 'w.format = f.format');
+  $query->fields('w', array('format', 'editor', 'settings'));
+  $query->fields('f', array('name'));
+
+  foreach ($query->execute() as $profile) {
+    $settings = unserialize($profile->settings);
+
+    if (!isset($settings['_profile_preferences']['add_to_summaries'])) {
+      $values = array(
+        '@format' => $profile->name,
+        '!url' => 'https://www.drupal.org/node/2851313',
+      );
+      drupal_set_message(t('You may need to manually resave the Wysiwyg profile configuration tied to the @format text format. See !url', $values), 'warning');
+    }
+  }
+}
