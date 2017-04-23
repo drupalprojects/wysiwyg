@@ -58,7 +58,7 @@ function _wysiwyg_delivery_dummy($page_callback_result) {
 }
 
 /**
- * Theme callback to simply suggest a theme based on the page arugment.
+ * Theme callback to simply suggest a theme based on the page argument.
  */
 function _wysiwyg_theme_callback($theme) {
   return $theme;
