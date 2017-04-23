@@ -264,7 +264,7 @@ Drupal.wysiwyg.editor.instance.ckeditor = {
 
   insert: function(content) {
     content = this.prepareContent(content);
-    if (CKEDITOR.env.webkit || CKEDITOR.env.chrome || CKEDITOR.env.opera || CKEDITOR.env.safari) {
+    if (CKEDITOR.version.split('.')[0] === '3' && (CKEDITOR.env.webkit || CKEDITOR.env.chrome || CKEDITOR.env.opera || CKEDITOR.env.safari)) {
       // Works around a WebKit bug which removes wrapper elements.
       // @see https://drupal.org/node/1927968
       var tmp = new CKEDITOR.dom.element('div'), children, skip = 0, item;
