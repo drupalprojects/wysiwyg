@@ -9,7 +9,7 @@ var instanceMap;
  * Initialize the editor library.
  *
  * This method is called once the first time a library is needed. If new
- * WYSIWYG fieldsare added later, update() will be called instead.
+ * WYSIWYG fields are added later, update() will be called instead.
  *
  * @param settings
  *   An object containing editor settings for each input format.
@@ -199,7 +199,7 @@ Drupal.wysiwyg.editor.detach.ckeditor = function (context, params, trigger) {
 Drupal.wysiwyg.editor.instance.ckeditor = {
   addPlugin: function (pluginName, pluginSettings) {
     CKEDITOR.plugins.add(pluginName, {
-      // Wrap Drupal plugin in a proxy pluygin.
+      // Wrap Drupal plugin in a proxy plugin.
       init: function(editor) {
         if (pluginSettings.css) {
           editor.on('mode', function(ev) {

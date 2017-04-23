@@ -318,7 +318,7 @@ function WysiwygInstance(internalInstance) {
   /**
    * Open a native editor dialog.
    *
-   * Use of this method i not recomended due to limited editor support.
+   * Use of this method i not recommended due to limited editor support.
    *
    * @param dialog
    *   An object with dialog settings. Keys used:

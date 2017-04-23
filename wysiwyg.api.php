@@ -206,7 +206,7 @@ function hook_INCLUDE_editor() {
     // (optional) A callback to invoke to return additional notes for installing
     // the editor library in the administrative list/overview.
     'install note callback' => 'wysiwyg_ckeditor_install_note',
-    // The minimum and maximum versions the implemetation has been tested with.
+    // The minimum and maximum versions the implementation has been tested with.
     // Users will be notified if installing a version not within this range.
     'verified version range' => array('1.2.3', '3.4.5'),
     // (optional) A callback to perform migrations of the settings stored in a
