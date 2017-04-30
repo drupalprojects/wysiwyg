@@ -1099,6 +1099,17 @@ function wysiwyg_get_all_editors() {
     );
     // Check whether library is present.
     if (!($editors[$editor]['installed'] = file_exists($editors[$editor]['library path']))) {
+      // Find the latest supported version.
+      ksort($editors[$editor]['versions']);
+      $version = key($editors[$editor]['versions']);
+      foreach ($editors[$editor]['versions'] as $supported_version => $version_properties) {
+        if (version_compare($version, $supported_version, '<')) {
+          $version = $supported_version;
+        }
+      }
+      // Apply library version specific definitions and overrides.
+      // This is to show the newest installation instructions.
+      $editors[$editor] = array_merge($editors[$editor], $editors[$editor]['versions'][$version]);
       continue;
     }
     $installed_version = NULL;
