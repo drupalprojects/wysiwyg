@@ -102,7 +102,7 @@ function _wysiwyg_pre_render_styles($elements) {
   }
   $cached = cache_get('wysiwyg_css');
   foreach (element_children($elements) as $child) {
-    if ($elements['#groups'][$child]['group'] != CSS_THEME) {
+    if (isset($elements['#groups'][$child]['group']) && $elements['#groups'][$child]['group'] != CSS_THEME) {
       continue;
     }
     switch ($elements[$child]['#tag']) {
