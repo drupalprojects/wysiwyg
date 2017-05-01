@@ -267,7 +267,7 @@ Drupal.wysiwygAttach = function(context, fieldId) {
       // summary is hidden, then switch to a real editor instance when shown.
       attachToField(fieldId, context, {summary: true, forceDisabled: true});
       // Unbind any existing click handler to avoid double toggling.
-      $('#' + fieldId).parents('.text-format-wrapper').find('.link-edit-summary').unbind('click.wysiwyg').bind('click.wysiwyg', function () {
+      $('#' + fieldId).parents('.text-format-wrapper').find('.link-edit-summary').closest('.field-edit-link').unbind('click.wysiwyg').bind('click.wysiwyg', function () {
         detachFromField(fieldId, context, 'unload', {summary: true});
         attachToField(fieldId, context, {summary: true, forceDisabled: !doSummary});
         $(this).unbind('click.wysiwyg');
